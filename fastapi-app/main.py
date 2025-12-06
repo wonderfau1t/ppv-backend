@@ -4,11 +4,13 @@ import uvicorn
 from fastapi import FastAPI
 
 from api import router as api_router
+from api.middlewares import AuthMiddleware
 from core import settings
 from core.models import db_helper
 from core.models.init_data import create_demo_data
 
 app = FastAPI()
+app.add_middleware(AuthMiddleware)
 app.include_router(api_router)
 
 
