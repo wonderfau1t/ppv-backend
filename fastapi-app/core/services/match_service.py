@@ -7,6 +7,7 @@ from core.schemas.match import (
     MatchListItemPlayerSchema,
     MatchListItemSchema,
 )
+from core.schemas.user import MyProfileMatchesListResponse
 
 
 class MatchService:
@@ -99,6 +100,14 @@ class MatchService:
 
         return match_schema
 
+    # async def get_matches_of_user(self, id: int) -> MyProfileMatchesListResponse:
+    #     matches = self.repo.get_by_user_id(id)
+    #     if not matches:
+    #         raise NotFoundError("0 matches")
+        
+
+        
+        
     # async def create_match(self, data: CreateMatchRequest):
     #     # Создание матча
     #     match = Match(player1_id=data.player1_id, player2_id=data.player2_id)

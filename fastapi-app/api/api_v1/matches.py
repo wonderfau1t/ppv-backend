@@ -10,14 +10,18 @@ from core.services.match_service import MatchService
 router = APIRouter()
 
 
-@router.get("/", response_model=MatchesListResponse)
+@router.get("", response_model=MatchesListResponse, summary="Список сыгранных матчей")
 async def list(service: Annotated[MatchService, Depends(get_match_service)]):
     matches = await service.list()
 
     return matches
 
 
-@router.get("/{id}", response_model=MatchDetailsResponse)
+@router.get(
+    "/{id}",
+    response_model=MatchDetailsResponse,
+    summary="Информация по конкретному матчу",
+)
 async def get_by_id(
     service: Annotated[MatchService, Depends(get_match_service)], id: int
 ):

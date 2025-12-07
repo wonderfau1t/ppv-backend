@@ -9,7 +9,7 @@ async def create_demo_data(session: AsyncSession):
     user_repo = UserRepository(session)
     match_repo = MatchRepository(session)
 
-    is_filled = await user_repo.list()
+    is_filled = await user_repo.list_of_user_auth()
     if is_filled:
         print("Таблица не пустая. Нельзя заполнить демо данными")
         return

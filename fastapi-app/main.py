@@ -2,15 +2,23 @@ import asyncio
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from api import router as api_router
-from api.middlewares import AuthMiddleware
+from api.middlewares import auth_middleware
 from core import settings
 from core.models import db_helper
 from core.models.init_data import create_demo_data
 
 app = FastAPI()
-app.add_middleware(AuthMiddleware)
+app.middleware("http")(auth_middleware)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.include_router(api_router)
 
 

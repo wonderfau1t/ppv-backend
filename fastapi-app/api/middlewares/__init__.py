@@ -1,1 +1,1 @@
-from .auth_middleware import AuthMiddleware
+from .auth_middleware import auth_middleware

@@ -1,0 +1,51 @@
+from datetime import datetime
+from typing import List
+
+from core.schemas.base import BaseSchema
+
+
+# ---- Список пользователей в системе ----
+class UsersListResponse(BaseSchema):
+    id: int
+    full_name: str
+
+
+# ---- Просмотр своего профиля ----
+class MyProfileResponse(BaseSchema):
+    id: int
+    first_name: str
+    middle_name: str
+    last_name: str
+    role: str
+    login: str
+
+
+# ---- Просмотр своей статистики ----
+class MyProfileStatsResponse(BaseSchema):
+    amateur_games_count: int
+    tournament_games_count: int
+    wins_count: int
+    losses_count: int
+    average_match_duration: int
+    average_time_to_point: int
+    total_matches_duration: int
+
+
+# ---- Список матчей ----
+class MyProfilePlayerSchema(BaseSchema):
+    id: int
+    full_name: str
+
+
+class MyProfileMatchesListItemSchema(BaseSchema):
+    id: int
+    date: datetime
+    opponent: MyProfilePlayerSchema
+    score: str
+    winner: MyProfilePlayerSchema
+    type: str
+
+
+class MyProfileMatchesListResponse(BaseSchema):
+    total: int
+    matches: List[MyProfileMatchesListItemSchema]

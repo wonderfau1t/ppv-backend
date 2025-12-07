@@ -19,13 +19,11 @@ def create_access_token(claims: JWTClaims) -> str:
     return token
 
 
-def decode_access_token(token: str) -> JWTClaims:
+def decode_access_token(token: str) -> JWTClaims | None:
     try:
         payload = jwt.decode(
             jwt=token, key=settings.jwt.secret, algorithms=[settings.jwt.algorithm]
         )
         return JWTClaims(**payload)
-    except jwt.ExpiredSignatureError:
-        raise Exception("Token expired")
-    except jwt.InvalidTokenError:
-        raise Exception("Invalid token")
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+        return None

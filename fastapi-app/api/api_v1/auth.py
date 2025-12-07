@@ -11,7 +11,7 @@ from core.services.user_service import UserService
 router = APIRouter()
 
 
-@router.post("/register")
+@router.post("/register", summary="Регистрация")
 async def register(
     service: Annotated[UserService, Depends(get_user_service)],
     data: RegisterSchema,
@@ -23,7 +23,7 @@ async def register(
     return user_id
 
 
-@router.post("/login")
+@router.post("/login", summary="Логин")
 async def login(
     response: Response,
     service: Annotated[AuthService, Depends(get_auth_service)],
@@ -31,7 +31,9 @@ async def login(
 ):
     try:
         token = await service.login(data)
-        response.set_cookie("access_token", token, httponly=True, secure=False)
+        response.set_cookie(
+            "access_token", token, httponly=True, secure=True, samesite="none"
+        )
     except UserNotFoundError as e:
         raise HTTPException(status_code=404, detail={"error": str(e)})
     except InvalidCredentialsError as e:

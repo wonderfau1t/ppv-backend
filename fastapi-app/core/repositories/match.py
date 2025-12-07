@@ -1,6 +1,6 @@
 from typing import Sequence
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
@@ -39,3 +39,13 @@ class MatchRepository:
         match = await self.session.scalar(stmt)
 
         return match
+
+    async def get_by_user_id(self, id: int) -> Sequence[Match]:
+        stmt = (
+            select(Match)
+            .where(or_(Match.player1_id == id, Match.player2_id == id))
+            .options(selectinload(Match.player1), selectinload(Match.player2))
+        )
+        matches = await self.session.scalars(stmt)
+
+        return matches.all()
