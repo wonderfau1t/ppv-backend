@@ -1,7 +1,9 @@
 from pydantic import BaseModel
 
+from core.schemas.base import BaseSchema
 
-class RegisterSchema(BaseModel):
+
+class RegisterSchema(BaseSchema):
     login: str
     password: str
     first_name: str
@@ -9,11 +11,11 @@ class RegisterSchema(BaseModel):
     last_name: str
 
 
-class LoginSchema(BaseModel):
+class LoginSchema(BaseSchema):
     login: str
     password: str
 
 
-class JWTClaims(BaseModel):
+class JWTClaims(BaseSchema):
     user_id: int
     role: str
