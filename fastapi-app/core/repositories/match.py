@@ -45,6 +45,7 @@ class MatchRepository:
             select(Match)
             .where(or_(Match.player1_id == id, Match.player2_id == id))
             .options(selectinload(Match.player1), selectinload(Match.player2))
+            .order_by(Match.date.desc())
         )
         matches = await self.session.scalars(stmt)
 

@@ -66,13 +66,13 @@ async def get_my_stats(
 
 
 # Просмотреть список собственных матчей
-# @router.get("/me/matches", summary="Просмотр списка матчей, в которых участвовал", response_model=MyProfileMatchesListResponse)
-# async def get_my_matches(service: Annotated[MatchService, Depends(get_match_service)], request: Request) -> MyProfileMatchesListResponse:
-#     try:
-#         matches = await service.get_matches_of_user(request.state.user.user_id)
-#     except:
-#         pass 
-#     return matches
+@router.get("/me/matches", summary="Просмотр списка матчей, в которых участвовал", response_model=MyProfileMatchesListResponse)
+async def get_my_matches(service: Annotated[MatchService, Depends(get_match_service)], request: Request) -> MyProfileMatchesListResponse:
+    try:
+        matches = await service.get_matches_by_user_id(request.state.user.user_id)
+    except:
+        pass 
+    return matches
 
 
 # Просмотреть профиль пользователя

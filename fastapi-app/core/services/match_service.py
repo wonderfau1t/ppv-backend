@@ -7,7 +7,11 @@ from core.schemas.match import (
     MatchListItemPlayerSchema,
     MatchListItemSchema,
 )
-from core.schemas.user import MyProfileMatchesListResponse
+from core.schemas.user import (
+    MyProfileMatchesListItemSchema,
+    MyProfileMatchesListResponse,
+    MyProfilePlayerSchema,
+)
 
 
 class MatchService:
@@ -100,14 +104,39 @@ class MatchService:
 
         return match_schema
 
-    # async def get_matches_of_user(self, id: int) -> MyProfileMatchesListResponse:
-    #     matches = self.repo.get_by_user_id(id)
-    #     if not matches:
-    #         raise NotFoundError("0 matches")
-        
+    async def get_matches_by_user_id(self, id: int) -> MyProfileMatchesListResponse:
+        matches = await self.repo.get_by_user_id(id)
+        if not matches:
+            raise NotFoundError("0 matches")
 
-        
-        
+        matches_dtos = []
+        for match in matches:
+            p1 = MyProfilePlayerSchema(
+                id=match.player1_id,
+                full_name=match.player1.full_name,
+            )
+            p2 = MyProfilePlayerSchema(
+                id=match.player2_id,
+                full_name=match.player2.full_name,
+            )
+            opponent = p1 if p1.id != id else p2
+
+            winner = p1 if match.winner_id == p1.id else p2
+
+            match_dto = MyProfileMatchesListItemSchema(
+                id=match.id,
+                date=match.date,
+                opponent=opponent,
+                score=f"{match.player1_score}:{match.player2_score}",
+                winner=winner,
+                type=match.type,
+            )
+            matches_dtos.append(match_dto)
+
+        return MyProfileMatchesListResponse(
+            total=len(matches_dtos), matches=matches_dtos
+        )
+
     # async def create_match(self, data: CreateMatchRequest):
     #     # Создание матча
     #     match = Match(player1_id=data.player1_id, player2_id=data.player2_id)

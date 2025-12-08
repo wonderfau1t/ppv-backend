@@ -39,3 +39,7 @@ class UserData(Base):
     matches_as_player2: Mapped[List["Match"]] = relationship(
         foreign_keys="Match.player2_id", back_populates="player2"
     )
+
+    @property
+    def full_name(self) -> str:
+        return " ".join([self.last_name, self.first_name, self.middle_name])
