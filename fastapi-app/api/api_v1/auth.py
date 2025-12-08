@@ -1,5 +1,4 @@
 from typing import Annotated
-from xml import dom
 
 from fastapi import APIRouter, Depends, HTTPException, Response
 
@@ -40,3 +39,8 @@ async def login(
     except InvalidCredentialsError as e:
         raise HTTPException(status_code=403, detail={"error": str(e)})
     return {"role": "user"}
+
+
+@router.get("/check-auth", summary="Проверка аутентификации")
+async def is_authenticated():
+    return
