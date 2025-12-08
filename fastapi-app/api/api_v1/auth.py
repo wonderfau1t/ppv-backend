@@ -33,7 +33,7 @@ async def login(
     try:
         token = await service.login(data)
         response.set_cookie(
-            "access_token", token, httponly=False, secure=True, samesite="none", domain="localhost"
+            "access_token", token, httponly=False, secure=False, samesite="none"
         )
     except UserNotFoundError as e:
         raise HTTPException(status_code=404, detail={"error": str(e)})
