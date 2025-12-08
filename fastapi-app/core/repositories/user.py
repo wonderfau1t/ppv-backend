@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from core.models import UserAuth, UserData
+from core.models import UserAuth, UserData, UserStats
 
 
 class UserRepository:
@@ -43,6 +43,16 @@ class UserRepository:
         user = await self.session.scalar(stmt)
 
         return user
+
+    async def update_stats(self, data: UserStats):
+        self.session.add(data)
+        await self.session.commit()
+
+    async def get_stats(self, user_id: int) -> UserStats | None:
+        stmt = select(UserStats).where(UserStats.id == user_id)
+        stats = await self.session.scalar(stmt)
+
+        return stats
 
     async def update(self):
         pass

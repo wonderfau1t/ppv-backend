@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.models import Match, MatchSet, UserAuth, UserData
+from core.models import Match, MatchSet, UserAuth, UserData, UserStats
 from core.repositories import MatchRepository, UserRepository
 from core.utils.bcrypt import hash_password
 
@@ -73,3 +73,29 @@ async def create_demo_data(session: AsyncSession):
     print("Добавление матчей...")
     await match_repo.create(match1)
     await match_repo.create(match2)
+
+    user1_stats = UserStats(
+        id=user1.id,
+        amateur_games_count=2,
+        tournament_games_count=0,
+        wins_count=1,
+        losses_count=1,
+        average_match_duration=23,
+        average_time_to_point=12,
+        total_matches_duration=46,
+    )
+
+    user2_stats = UserStats(
+        id=user2.id,
+        amateur_games_count=2,
+        tournament_games_count=0,
+        wins_count=1,
+        losses_count=1,
+        average_match_duration=23,
+        average_time_to_point=10,
+        total_matches_duration=46,
+    )
+
+    print("Сохранение статистики")
+    await user_repo.update_stats(user1_stats)
+    await user_repo.update_stats(user2_stats)

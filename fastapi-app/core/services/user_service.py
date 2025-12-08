@@ -1,9 +1,14 @@
 from typing import List
+
 from core.exceptions.basic import NotFoundError
 from core.models import UserAuth, UserData
 from core.repositories import UserRepository
 from core.schemas.auth import RegisterSchema
-from core.schemas.user import MyProfileMatchesListResponse, MyProfileResponse, MyProfileStatsResponse, UsersListResponse
+from core.schemas.user import (
+    MyProfileResponse,
+    MyProfileStatsResponse,
+    UsersListResponse,
+)
 from core.utils.bcrypt import hash_password
 
 
@@ -59,10 +64,15 @@ class UserService:
         )
 
         return dto
-    
+
     async def get_stats(self, id: int) -> MyProfileStatsResponse:
-        ...
+        stats = await self.repo.get_stats(id)
+        if not stats:
+            raise NotFoundError(f"Stats of User {id} not found")
+
+        dto = MyProfileStatsResponse.model_validate(stats)
+
+        return dto
 
     # async def get_matches_of_user(self, id: int) -> MyProfileMatchesListResponse:
     #     matches = await self.repo.get
-
