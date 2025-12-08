@@ -3,7 +3,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Response
 
 from api.dependencies.services import get_auth_service, get_user_service
-from core.exceptions.auth import InvalidCredentialsError, UserNotFoundError
+from core.exceptions.auth import InvalidCredentialsError
+from core.exceptions.basic import NotFoundError
 from core.schemas.auth import LoginSchema, RegisterSchema
 from core.services.auth_service import AuthService
 from core.services.user_service import UserService
@@ -34,7 +35,7 @@ async def login(
         response.set_cookie(
             "access_token", token, httponly=True, secure=True, samesite="none"
         )
-    except UserNotFoundError as e:
+    except NotFoundError as e:
         raise HTTPException(status_code=404, detail={"error": str(e)})
     except InvalidCredentialsError as e:
         raise HTTPException(status_code=403, detail={"error": str(e)})
@@ -44,3 +45,12 @@ async def login(
 @router.get("/check-auth", summary="Проверка аутентификации")
 async def is_authenticated():
     return
+
+
+@router.get("/logout", summary="Логаут (чистка куки)")
+async def logout(
+    response: Response,
+):
+    response.delete_cookie("access_token")
+
+    return {"status": "success"}
