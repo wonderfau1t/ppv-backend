@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from api.dependencies.services import get_match_service
 from core.exceptions.basic import NotFoundError
@@ -11,9 +11,13 @@ router = APIRouter()
 
 
 @router.get("", response_model=MatchesListResponse, summary="Список сыгранных матчей")
-async def list(service: Annotated[MatchService, Depends(get_match_service)]):
+async def list(
+    service: Annotated[MatchService, Depends(get_match_service)],
+    limit: int = Query(10, ge=1, le=20),
+    offset: int = Query(0, ge=0),
+):
     try:
-        matches = await service.list()
+        matches = await service.list(limit=limit, offset=offset)
     except NotFoundError as e:
         raise HTTPException(404, detail={"error": str(e)})
 

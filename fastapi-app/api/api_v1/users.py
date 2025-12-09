@@ -1,6 +1,6 @@
 from typing import Annotated, List
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 
 from api.dependencies import get_match_service, get_user_service
 from core.schemas.user import (
@@ -72,10 +72,13 @@ async def get_my_stats(
     response_model=MyProfileMatchesListResponse,
 )
 async def get_my_matches(
-    service: Annotated[MatchService, Depends(get_match_service)], request: Request
+    service: Annotated[MatchService, Depends(get_match_service)],
+    request: Request,
+    limit: int = Query(10, ge=1, le=20),
+    offset: int = Query(0, ge=0),
 ) -> MyProfileMatchesListResponse:
     try:
-        matches = await service.get_matches_by_user_id(request.state.user.user_id)
+        matches = await service.get_matches_by_user_id(request.state.user.user_id, limit, offset)
     except:
         pass
     return matches

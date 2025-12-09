@@ -48,4 +48,6 @@ class MyProfileMatchesListItemSchema(BaseSchema):
 
 class MyProfileMatchesListResponse(BaseSchema):
     total: int
-    matches: List[MyProfileMatchesListItemSchema]
+    limit: int
+    offset: int
+    items: List[MyProfileMatchesListItemSchema]

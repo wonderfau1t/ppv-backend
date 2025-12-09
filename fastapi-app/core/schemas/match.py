@@ -21,7 +21,9 @@ class MatchListItemSchema(BaseSchema):
 
 class MatchesListResponse(BaseSchema):
     total: int
-    matches: List[MatchListItemSchema]
+    limit: int
+    offset: int
+    items: List[MatchListItemSchema]
 
 
 # class CreateMatchRequest(BaseSchema):

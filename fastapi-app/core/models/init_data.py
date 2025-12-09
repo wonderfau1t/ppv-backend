@@ -1,101 +1,87 @@
+import random
+
+from faker import Faker
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.models import Match, MatchSet, UserAuth, UserData, UserStats
+from core.models import Match, MatchSet, UserAuth, UserData
 from core.repositories import MatchRepository, UserRepository
 from core.utils.bcrypt import hash_password
+
+fake = Faker("ru_RU")
 
 
 async def create_demo_data(session: AsyncSession):
     user_repo = UserRepository(session)
     match_repo = MatchRepository(session)
 
-    is_filled = await user_repo.list_of_user_auth()
-    if is_filled:
-        print("Таблица не пустая. Нельзя заполнить демо данными")
+    existing_users = await user_repo.list_of_user_auth()
+    if existing_users:
+        print("Таблица не пуста — отмена генерации.")
         return
 
-    user1 = UserData(
-        first_name="Dmitrii",
-        middle_name="Andreevich",
-        last_name="Itigechev",
-        user_auth=UserAuth(login="dima", password_hash=hash_password("test")),
-    )
-    user2 = UserData(
-        first_name="Artemii",
-        middle_name="Igorevich",
-        last_name="Sviridov",
-        user_auth=UserAuth(login="tema", password_hash=hash_password("test")),
-    )
+    print("Создание 50 пользователей...")
 
-    print("Добавление пользователей...")
-    user1_id = await user_repo.create(user1)
-    user2_id = await user_repo.create(user2)
+    users: list[int] = []
 
-    match1 = Match(
-        player1_id=user1_id,
-        player2_id=user2_id,
-        player1_score=2,
-        player2_score=1,
-        winner_id=user1_id,
-        duration_in_minutes=21,
-        sets=[
-            MatchSet(
-                set_number=1, player1_score=11, player2_score=5, winner_id=user1_id
-            ),
-            MatchSet(
-                set_number=2, player1_score=11, player2_score=13, winner_id=user2_id
-            ),
-            MatchSet(
-                set_number=3, player1_score=11, player2_score=2, winner_id=user1_id
-            ),
-        ],
-    )
-    match2 = Match(
-        player1_id=user1_id,
-        player2_id=user2_id,
-        player1_score=1,
-        player2_score=2,
-        winner_id=user2_id,
-        duration_in_minutes=25,
-        sets=[
-            MatchSet(
-                set_number=1, player1_score=5, player2_score=11, winner_id=user2_id
-            ),
-            MatchSet(
-                set_number=2, player1_score=11, player2_score=13, winner_id=user2_id
-            ),
-            MatchSet(
-                set_number=3, player1_score=11, player2_score=2, winner_id=user1_id
-            ),
-        ],
-    )
+    for i in range(50):
+        fn = fake.first_name_male()
+        ln = fake.last_name_male()
+        mn = fake.middle_name_male()
 
-    print("Добавление матчей...")
-    await match_repo.create(match1)
-    await match_repo.create(match2)
+        user = UserData(
+            first_name=fn,
+            middle_name=mn,
+            last_name=ln,
+            user_auth=UserAuth(
+                login=f"user{i}",
+                password_hash=hash_password("test"),
+            ),
+        )
 
-    user1_stats = UserStats(
-        id=user1.id,
-        amateur_games_count=2,
-        tournament_games_count=0,
-        wins_count=1,
-        losses_count=1,
-        average_match_duration=23,
-        average_time_to_point=12,
-        total_matches_duration=46,
-    )
+        uid = await user_repo.create(user)
+        users.append(uid)
 
-    user2_stats = UserStats(
-        id=user2.id,
-        amateur_games_count=2,
-        tournament_games_count=0,
-        wins_count=1,
-        losses_count=1,
-        average_match_duration=23,
-        average_time_to_point=10,
-        total_matches_duration=46,
-    )
+    print("Создание случайных матчей...")
 
-    print("Сохранение статистики")
-    await user_repo.update_stats(user1_stats)
-    await user_repo.update_stats(user2_stats)
+    for _ in range(150):
+        p1, p2 = random.sample(users, 2)
+
+        sets = []
+        p1_total = 0
+        p2_total = 0
+        winner = None
+
+        for set_num in range(1, 4):
+            p1_score = random.randint(5, 15)
+            p2_score = random.randint(5, 15)
+
+            p1_total += p1_score > p2_score
+            p2_total += p2_score > p1_score
+
+            set_winner = p1 if p1_score > p2_score else p2
+
+            sets.append(
+                MatchSet(
+                    set_number=set_num,
+                    player1_score=p1_score,
+                    player2_score=p2_score,
+                    winner_id=set_winner,
+                )
+            )
+
+        winner = p1 if p1_total > p2_total else p2
+        duration = random.randint(10, 40)
+
+        match = Match(
+            player1_id=p1,
+            player2_id=p2,
+            player1_score=p1_total,
+            player2_score=p2_total,
+            winner_id=winner,
+            duration_in_minutes=duration,
+            sets=sets,
+        )
+
+        await match_repo.create_with_stats(match)
+
+    print("Генерация завершена.")

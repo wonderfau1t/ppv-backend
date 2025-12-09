@@ -18,11 +18,13 @@ class MatchService:
     def __init__(self, repo: MatchRepository) -> None:
         self.repo = repo
 
-    async def list(self) -> MatchesListResponse:
-        matches_orm = await self.repo.list()
+    async def list(self, limit: int, offset: int) -> MatchesListResponse:
+        total, matches_orm = await self.repo.list(limit=limit, offset=offset)
         matches_schema = {
-            "total": len(matches_orm),
-            "matches": [
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+            "items": [
                 MatchListItemSchema(
                     id=match.id,
                     date=match.date,
@@ -104,8 +106,10 @@ class MatchService:
 
         return match_schema
 
-    async def get_matches_by_user_id(self, id: int) -> MyProfileMatchesListResponse:
-        matches = await self.repo.get_by_user_id(id)
+    async def get_matches_by_user_id(
+        self, id: int, limit: int, offset: int
+    ) -> MyProfileMatchesListResponse:
+        total, matches = await self.repo.get_by_user_id(id, limit, offset)
         if not matches:
             raise NotFoundError("0 matches")
 
@@ -134,7 +138,10 @@ class MatchService:
             matches_dtos.append(match_dto)
 
         return MyProfileMatchesListResponse(
-            total=len(matches_dtos), matches=matches_dtos
+            total=total,
+            limit=limit,
+            offset=offset,
+            items=matches_dtos,
         )
 
     # async def create_match(self, data: CreateMatchRequest):
