@@ -81,6 +81,38 @@ async def get_my_matches(
     return matches
 
 
+@router.get("/me/matches/table-schema")
+async def get_table_schema():
+    response = {
+        "columns": [
+            {"key": "id", "title": "ID", "type": "str"},
+            {"key": "date", "title": "Дата", "type": "date"},
+            {
+                "key": "opponent",
+                "title": "Противник",
+                "type": "object",
+                "fields": [
+                    {"key": "id", "type": "int"},
+                    {"key": "fullName", "type": "str"},
+                ],
+            },
+            {"key": "score", "title": "Счет", "type": "str"},
+            {
+                "key": "winner",
+                "title": "Победитель",
+                "type": "object",
+                "fields": [
+                    {"key": "id", "type": "int"},
+                    {"key": "fullName", "type": "str"},
+                ],
+            },
+            {"key": "type", "title": "Тип игры", "type": "str"},
+        ]
+    }
+
+    return response
+
+
 # Просмотреть профиль пользователя
 @router.get("/{id}", summary="Просмотр профиля пользователя")
 async def get_by_id(id: int):
