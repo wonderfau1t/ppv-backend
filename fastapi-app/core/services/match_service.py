@@ -1,6 +1,7 @@
 from core.exceptions.basic import NotFoundError
 from core.repositories import MatchRepository
 from core.schemas.match import (
+    AvatarSchema,
     MatchDetailsPlayerScheme,
     MatchDetailsResponse,
     MatchesListResponse,
@@ -27,7 +28,7 @@ class MatchService:
             "items": [
                 MatchListItemSchema(
                     id=match.id,
-                    date=match.date,
+                    date=match.date.date(),
                     player1=MatchListItemPlayerSchema(
                         id=match.player1.id,
                         full_name=" ".join(
@@ -37,6 +38,7 @@ class MatchService:
                                 match.player1.middle_name,
                             ]
                         ),
+                        avatar=AvatarSchema(alter=match.player1.initials, path=""),
                     ),
                     player2=MatchListItemPlayerSchema(
                         id=match.player2.id,
@@ -47,6 +49,7 @@ class MatchService:
                                 match.player2.middle_name,
                             ]
                         ),
+                        avatar=AvatarSchema(alter=match.player2.initials, path=""),
                     ),
                     score=f"{match.player1_score}:{match.player2_score}",
                     winner=MatchListItemPlayerSchema(
@@ -58,6 +61,7 @@ class MatchService:
                                 match.winner.middle_name,
                             ]
                         ),
+                        avatar=AvatarSchema(alter=match.winner.initials, path=""),
                     ),
                     type=match.type,
                 )
@@ -118,10 +122,12 @@ class MatchService:
             p1 = MyProfilePlayerSchema(
                 id=match.player1_id,
                 full_name=match.player1.full_name,
+                avatar=AvatarSchema(alter=match.player1.initials, path=""),
             )
             p2 = MyProfilePlayerSchema(
                 id=match.player2_id,
                 full_name=match.player2.full_name,
+                avatar=AvatarSchema(alter=match.player2.initials, path=""),
             )
             opponent = p1 if p1.id != id else p2
 
@@ -129,7 +135,7 @@ class MatchService:
 
             match_dto = MyProfileMatchesListItemSchema(
                 id=match.id,
-                date=match.date,
+                date=match.date.date(),
                 opponent=opponent,
                 score=f"{match.player1_score}:{match.player2_score}",
                 winner=winner,

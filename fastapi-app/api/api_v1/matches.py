@@ -33,7 +33,7 @@ async def get_table_schema():
             {
                 "key": "player1",
                 "title": "Игрок 1",
-                "type": "object",
+                "type": "player",
                 "fields": [
                     {"key": "id", "type": "number"},
                     {"key": "fullName", "type": "str"},
@@ -42,7 +42,7 @@ async def get_table_schema():
             {
                 "key": "player2",
                 "title": "Игрок 2",
-                "type": "object",
+                "type": "player",
                 "fields": [
                     {"key": "id", "type": "number"},
                     {"key": "fullName", "type": "str"},
@@ -52,7 +52,7 @@ async def get_table_schema():
             {
                 "key": "winner",
                 "title": "Победитель",
-                "type": "object",
+                "type": "player",
                 "fields": [
                     {"key": "id", "type": "number"},
                     {"key": "fullName", "type": "str"},

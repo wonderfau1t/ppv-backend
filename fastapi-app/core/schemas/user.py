@@ -1,7 +1,8 @@
-from datetime import datetime
+from datetime import date
 from typing import List
 
 from core.schemas.base import BaseSchema
+from core.schemas.match import AvatarSchema
 
 
 # ---- Список пользователей в системе ----
@@ -35,11 +36,12 @@ class MyProfileStatsResponse(BaseSchema):
 class MyProfilePlayerSchema(BaseSchema):
     id: int
     full_name: str
+    avatar: AvatarSchema
 
 
 class MyProfileMatchesListItemSchema(BaseSchema):
     id: int
-    date: datetime
+    date: date
     opponent: MyProfilePlayerSchema
     score: str
     winner: MyProfilePlayerSchema

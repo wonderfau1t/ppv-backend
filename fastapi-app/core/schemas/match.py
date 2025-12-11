@@ -1,17 +1,23 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import List
 
 from .base import BaseSchema
 
 
+class AvatarSchema(BaseSchema):
+    alter: str
+    path: str
+
+
 class MatchListItemPlayerSchema(BaseSchema):
     id: int
     full_name: str
+    avatar: AvatarSchema
 
 
 class MatchListItemSchema(BaseSchema):
     id: int
-    date: datetime
+    date: date
     player1: MatchListItemPlayerSchema
     player2: MatchListItemPlayerSchema
     score: str

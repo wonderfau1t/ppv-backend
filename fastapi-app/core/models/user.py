@@ -48,6 +48,10 @@ class UserData(Base):
     def full_name(self) -> str:
         return " ".join([self.last_name, self.first_name, self.middle_name])
 
+    @property
+    def initials(self) -> str:
+        return self.first_name[0] + self.last_name[0]
+
 
 class UserStats(Base):
     __tablename__ = "users_stats"

@@ -93,7 +93,7 @@ async def get_table_schema():
             {
                 "key": "opponent",
                 "title": "Противник",
-                "type": "object",
+                "type": "player",
                 "fields": [
                     {"key": "id", "type": "int"},
                     {"key": "fullName", "type": "str"},
@@ -103,7 +103,7 @@ async def get_table_schema():
             {
                 "key": "winner",
                 "title": "Победитель",
-                "type": "object",
+                "type": "player",
                 "fields": [
                     {"key": "id", "type": "int"},
                     {"key": "fullName", "type": "str"},
