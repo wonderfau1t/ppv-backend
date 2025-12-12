@@ -9,6 +9,7 @@ from core.schemas.match import AvatarSchema
 class UsersListResponse(BaseSchema):
     id: int
     full_name: str
+    avatar: AvatarSchema
 
 
 # ---- Просмотр своего профиля ----
@@ -17,6 +18,7 @@ class MyProfileResponse(BaseSchema):
     first_name: str
     middle_name: str
     last_name: str
+    avatar: AvatarSchema
     role: str
     login: str
 

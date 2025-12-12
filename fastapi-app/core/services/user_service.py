@@ -5,6 +5,7 @@ from core.models import UserAuth, UserData
 from core.repositories import UserRepository
 from core.schemas.auth import RegisterSchema
 from core.schemas.user import (
+    AvatarSchema,
     MyProfileResponse,
     MyProfileStatsResponse,
     UsersListResponse,
@@ -21,9 +22,7 @@ class UserService:
         if exists:
             raise ValueError("login already exists")
 
-        user_auth = UserAuth(
-            login=data.login, password_hash=hash_password(data.password)
-        )
+        user_auth = UserAuth(login=data.login, password_hash=hash_password(data.password))
         user_data = UserData(
             first_name=data.first_name,
             middle_name=data.middle_name,
@@ -43,6 +42,7 @@ class UserService:
             UsersListResponse(
                 id=user.id,
                 full_name=" ".join([user.last_name, user.first_name, user.middle_name]),
+                avatar=AvatarSchema(alter=user.initials, path=""),
             )
             for user in users
         ]
@@ -59,6 +59,7 @@ class UserService:
             first_name=user.first_name,
             middle_name=user.middle_name,
             last_name=user.last_name,
+            avatar=AvatarSchema(alter=user.initials, path=""),
             login=user.user_auth.login,
             role="Пользователь",
         )
