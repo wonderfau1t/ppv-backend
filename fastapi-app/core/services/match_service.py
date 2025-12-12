@@ -89,6 +89,7 @@ class MatchService:
                         match.player1.middle_name,
                     ]
                 ),
+                avatar=AvatarSchema(alter=match.player1.initials, path=""),
                 is_winner=(True if match.winner_id == match.player1_id else False),
                 score=match.player1_score if match.player1_score is not None else 0,
                 sets=[match_set.player1_score for match_set in match.sets],
@@ -102,6 +103,7 @@ class MatchService:
                         match.player2.middle_name,
                     ]
                 ),
+                avatar=AvatarSchema(alter=match.player2.initials, path=""),
                 is_winner=(True if match.winner_id == match.player2_id else False),
                 score=match.player2_score if match.player2_score is not None else 0,
                 sets=[match_set.player2_score for match_set in match.sets],

@@ -41,6 +41,7 @@ class MatchesListResponse(BaseSchema):
 class MatchDetailsPlayerScheme(BaseSchema):
     id: int
     full_name: str
+    avatar: AvatarSchema
     is_winner: bool
     score: int
     sets: List[int]

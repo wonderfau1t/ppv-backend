@@ -70,9 +70,7 @@ async def get_table_schema():
     response_model=MatchDetailsResponse,
     summary="Информация по конкретному матчу",
 )
-async def get_by_id(
-    service: Annotated[MatchService, Depends(get_match_service)], id: int
-):
+async def get_by_id(service: Annotated[MatchService, Depends(get_match_service)], id: int):
     try:
         match = await service.get_by_id(id)
     except NotFoundError as e:
