@@ -24,7 +24,7 @@ async def list(
     return matches
 
 
-@router.get("/table-schema")
+@router.get("/table-schema", deprecated=True)
 async def get_table_schema():
     response = {
         "columns": [

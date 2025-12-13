@@ -1,6 +1,6 @@
 from typing import Annotated, List
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, Response, UploadFile, status
 
 from api.dependencies import get_match_service, get_user_service
 from core.exceptions.auth import InvalidCredentialsError
@@ -51,7 +51,7 @@ async def get_my_profile(
     return user
 
 
-# Обновление инфомрации в профиле
+# Обновление информации в профиле
 @router.put("/me")
 async def update_my_profile(
     service: Annotated[UserService, Depends(get_user_service)],
@@ -61,6 +61,11 @@ async def update_my_profile(
     update = await service.update_profile(request.state.user.user_id, data)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
+
+# Установка фото профиля
+@router.post("/me/avatar")
+async def upload_avatar(service: Annotated[UserService, Depends(get_user_service)], request: Request, file: UploadFile):
+    await service.upload_avatar(request.state.user.user_id, file)
 
 # Смена пароля
 @router.patch("/me/password")

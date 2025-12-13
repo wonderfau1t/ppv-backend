@@ -1,6 +1,9 @@
+import os
 from typing import Sequence
 
-from sqlalchemy import select
+import aiofiles
+from fastapi import UploadFile
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -80,6 +83,19 @@ class UserRepository:
         await self.session.refresh(user)
 
         return user
+
+    async def save_file(self, file: UploadFile, path: str):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+
+        async with aiofiles.open(path, "wb") as f:
+            while chunk := await file.read(1024 * 1024):
+                await f.write(chunk)
+
+    async def update_avatar_url(self, id: int, path: str):
+        stmt = update(UserData).where(UserData.id == id).values(avatar_url=path)
+
+        await self.session.execute(stmt)
+        await self.session.commit()
 
     async def delete(self):
         pass

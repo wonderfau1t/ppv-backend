@@ -32,18 +32,18 @@ class MatchService:
                     player1=MatchListItemPlayerSchema(
                         id=match.player1.id,
                         full_name=match.player1.full_name,
-                        avatar=AvatarSchema(alter=match.player1.initials, path=""),
+                        avatar=AvatarSchema(alter=match.player1.initials, path=match.player1.avatar_url),
                     ),
                     player2=MatchListItemPlayerSchema(
                         id=match.player2.id,
                         full_name=match.player2.full_name,
-                        avatar=AvatarSchema(alter=match.player2.initials, path=""),
+                        avatar=AvatarSchema(alter=match.player2.initials, path=match.player2.avatar_url),
                     ),
                     score=f"{match.player1_score}:{match.player2_score}",
                     winner=MatchListItemPlayerSchema(
                         id=match.winner.id,
                         full_name=match.winner.full_name,
-                        avatar=AvatarSchema(alter=match.winner.initials, path=""),
+                        avatar=AvatarSchema(alter=match.winner.initials, path=match.winner.avatar_url),
                     ),
                     type=match.type,
                 )
@@ -65,7 +65,7 @@ class MatchService:
             player1=MatchDetailsPlayerScheme(
                 id=match.player1_id,
                 full_name=match.player1.full_name,
-                avatar=AvatarSchema(alter=match.player1.initials, path=""),
+                avatar=AvatarSchema(alter=match.player1.initials, path=match.player1.avatar_url),
                 is_winner=(True if match.winner_id == match.player1_id else False),
                 score=match.player1_score if match.player1_score is not None else 0,
                 sets=[match_set.player1_score for match_set in match.sets],
@@ -73,7 +73,7 @@ class MatchService:
             player2=MatchDetailsPlayerScheme(
                 id=match.player2_id,
                 full_name=match.player2.full_name,
-                avatar=AvatarSchema(alter=match.player2.initials, path=""),
+                avatar=AvatarSchema(alter=match.player2.initials, path=match.player2.avatar_url),
                 is_winner=(True if match.winner_id == match.player2_id else False),
                 score=match.player2_score if match.player2_score is not None else 0,
                 sets=[match_set.player2_score for match_set in match.sets],
@@ -94,12 +94,12 @@ class MatchService:
             p1 = MyProfilePlayerSchema(
                 id=match.player1_id,
                 full_name=match.player1.full_name,
-                avatar=AvatarSchema(alter=match.player1.initials, path=""),
+                avatar=AvatarSchema(alter=match.player1.initials, path=match.player1.avatar_url),
             )
             p2 = MyProfilePlayerSchema(
                 id=match.player2_id,
                 full_name=match.player2.full_name,
-                avatar=AvatarSchema(alter=match.player2.initials, path=""),
+                avatar=AvatarSchema(alter=match.player2.initials, path=match.player2.avatar_url),
             )
             opponent = p1 if p1.id != id else p2
 

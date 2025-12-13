@@ -1,5 +1,10 @@
+import os
 from typing import List
+import uuid
 
+from fastapi import UploadFile
+
+from core import settings
 from core.exceptions.auth import InvalidCredentialsError
 from core.exceptions.basic import NotFoundError
 from core.models import UserAuth, UserData
@@ -45,7 +50,7 @@ class UserService:
             UsersListResponse(
                 id=user.id,
                 full_name=user.full_name,
-                avatar=AvatarSchema(alter=user.initials, path=""),
+                avatar=AvatarSchema(alter=user.initials, path=user.avatar_url),
             )
             for user in users
         ]
@@ -62,7 +67,7 @@ class UserService:
             first_name=user.first_name,
             middle_name=user.middle_name if user.middle_name is not None else "",
             last_name=user.last_name,
-            avatar=AvatarSchema(alter=user.initials, path=""),
+            avatar=AvatarSchema(alter=user.initials, path=user.avatar_url),
             login=user.user_auth.login,
             role="Пользователь",
         )
@@ -100,6 +105,19 @@ class UserService:
             raise InvalidCredentialsError("Invalid password")
 
         return await self.repo.update_password(user, hash_password(data.new_password))
+    
+    async def upload_avatar(self, id: int, file: UploadFile):
+        if file.content_type not in ("image/jpeg", "image/png", "image/webp"):
+            raise
+        if file.size and file.size > 5 * 1024 * 1024:
+            raise
+
+        filename = f"{uuid.uuid4()}.jpg"
+        relative_path = f"avatars/{filename}"
+        absolute_path = os.path.join(settings.media.root, relative_path)
+
+        await self.repo.save_file(file, absolute_path)
+        await self.repo.update_avatar_url(id, f"{settings.media.url}/{relative_path}")
 
     # async def get_matches_of_user(self, id: int) -> MyProfileMatchesListResponse:
     #     matches = await self.repo.get

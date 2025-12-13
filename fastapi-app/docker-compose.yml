@@ -3,6 +3,8 @@ services:
     build: .
     container_name: ppv-api-con
     env_file: .env
+    volumes:
+      - ./media:/app/media
     depends_on:
       - db
     ports:

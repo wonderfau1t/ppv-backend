@@ -28,6 +28,7 @@ class UserData(Base):
     first_name: Mapped[str]
     middle_name: Mapped[Optional[str]]
     last_name: Mapped[str]
+    avatar_url: Mapped[Optional[str]]
 
     user_auth: Mapped["UserAuth"] = relationship(
         back_populates="user_data",

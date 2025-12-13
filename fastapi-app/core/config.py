@@ -1,6 +1,10 @@
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+class MediaSettings(BaseModel):
+    root: str
+    url: str
+
 class JWTConfig(BaseModel):
     secret: str
     algorithm: str
@@ -37,6 +41,7 @@ class Settings(BaseSettings):
     )
     httpserver_config: HTTPServerConfig = HTTPServerConfig()
     api_prefix: ApiPrefix = ApiPrefix()
+    media: MediaSettings
     db: DatabaseConfig
     jwt: JWTConfig
 

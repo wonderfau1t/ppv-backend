@@ -6,7 +6,7 @@ from .base import BaseSchema
 
 class AvatarSchema(BaseSchema):
     alter: str
-    path: str
+    path: str | None
 
 
 class MatchListItemPlayerSchema(BaseSchema):
