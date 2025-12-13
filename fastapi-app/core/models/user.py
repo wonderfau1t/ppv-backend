@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -26,7 +26,7 @@ class UserData(Base):
 
     id: Mapped[int] = mapped_column(ForeignKey("users_auth.id"), primary_key=True)
     first_name: Mapped[str]
-    middle_name: Mapped[str]
+    middle_name: Mapped[Optional[str]]
     last_name: Mapped[str]
 
     user_auth: Mapped["UserAuth"] = relationship(
@@ -40,13 +40,17 @@ class UserData(Base):
         foreign_keys="Match.player2_id", back_populates="player2"
     )
 
-    stats: Mapped["UserStats"] = relationship(
-        uselist=False, cascade="all, delete-orphan"
-    )
+    stats: Mapped["UserStats"] = relationship(uselist=False, cascade="all, delete-orphan")
 
     @property
     def full_name(self) -> str:
-        return " ".join([self.last_name, self.first_name, self.middle_name])
+        return " ".join(
+            [
+                self.last_name,
+                self.first_name,
+                self.middle_name if self.middle_name is not None else "",
+            ]
+        )
 
     @property
     def initials(self) -> str:

@@ -5,6 +5,18 @@ from core.schemas.base import BaseSchema
 from core.schemas.match import AvatarSchema
 
 
+class UpdateProfileRequest(BaseSchema):
+    first_name: str
+    middle_name: str | None
+    last_name: str
+    login: str
+
+
+class ChangePasswordRequest(BaseSchema):
+    current_password: str
+    new_password: str
+
+
 # ---- Список пользователей в системе ----
 class UsersListResponse(BaseSchema):
     id: int

@@ -1,16 +1,19 @@
 from typing import List
 
+from core.exceptions.auth import InvalidCredentialsError
 from core.exceptions.basic import NotFoundError
 from core.models import UserAuth, UserData
 from core.repositories import UserRepository
 from core.schemas.auth import RegisterSchema
 from core.schemas.user import (
     AvatarSchema,
+    ChangePasswordRequest,
     MyProfileResponse,
     MyProfileStatsResponse,
+    UpdateProfileRequest,
     UsersListResponse,
 )
-from core.utils.bcrypt import hash_password
+from core.utils.bcrypt import check_password, hash_password
 
 
 class UserService:
@@ -41,7 +44,7 @@ class UserService:
         dtos = [
             UsersListResponse(
                 id=user.id,
-                full_name=" ".join([user.last_name, user.first_name, user.middle_name]),
+                full_name=user.full_name,
                 avatar=AvatarSchema(alter=user.initials, path=""),
             )
             for user in users
@@ -57,7 +60,7 @@ class UserService:
         dto = MyProfileResponse(
             id=user.id,
             first_name=user.first_name,
-            middle_name=user.middle_name,
+            middle_name=user.middle_name if user.middle_name is not None else "",
             last_name=user.last_name,
             avatar=AvatarSchema(alter=user.initials, path=""),
             login=user.user_auth.login,
@@ -74,6 +77,29 @@ class UserService:
         dto = MyProfileStatsResponse.model_validate(stats)
 
         return dto
+
+    async def update_profile(self, id: int, data: UpdateProfileRequest):
+        user = await self.repo.get_by_id_with_data(id)
+        if not user:
+            raise NotFoundError(f"User {id} not found")
+
+        return await self.repo.update_profile(
+            user=user,
+            login=data.login,
+            first_name=data.first_name,
+            middle_name=data.middle_name,
+            last_name=data.last_name,
+        )
+
+    async def update_password(self, id, data: ChangePasswordRequest):
+        user = await self.repo.get_auth_data_by_id(id)
+        if not user:
+            raise NotFoundError(f"User {id} not found")
+
+        if not check_password(data.current_password, user.password_hash):
+            raise InvalidCredentialsError("Invalid password")
+
+        return await self.repo.update_password(user, hash_password(data.new_password))
 
     # async def get_matches_of_user(self, id: int) -> MyProfileMatchesListResponse:
     #     matches = await self.repo.get

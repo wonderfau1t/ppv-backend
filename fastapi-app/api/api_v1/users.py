@@ -1,12 +1,15 @@
 from typing import Annotated, List
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 
 from api.dependencies import get_match_service, get_user_service
+from core.exceptions.auth import InvalidCredentialsError
 from core.schemas.user import (
+    ChangePasswordRequest,
     MyProfileMatchesListResponse,
     MyProfileResponse,
     MyProfileStatsResponse,
+    UpdateProfileRequest,
     UsersListResponse,
 )
 from core.services import MatchService, UserService
@@ -48,6 +51,31 @@ async def get_my_profile(
     return user
 
 
+# Обновление инфомрации в профиле
+@router.put("/me")
+async def update_my_profile(
+    service: Annotated[UserService, Depends(get_user_service)],
+    request: Request,
+    data: UpdateProfileRequest,
+):
+    update = await service.update_profile(request.state.user.user_id, data)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# Смена пароля
+@router.patch("/me/password")
+async def change_password(
+    service: Annotated[UserService, Depends(get_user_service)],
+    request: Request,
+    data: ChangePasswordRequest,
+):
+    try:
+        update = await service.update_password(request.state.user.user_id, data)
+    except InvalidCredentialsError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
 # Просмотр статистики
 @router.get(
     "/me/stats",
@@ -84,7 +112,19 @@ async def get_my_matches(
     return matches
 
 
-@router.get("/me/matches/table-schema")
+# Просмотреть профиль пользователя
+@router.get("/{id}", summary="Просмотр профиля пользователя")
+async def get_by_id(id: int):
+    pass
+
+
+# Просмотреть список матчей пользователя
+@router.get("/{id}/matches", summary="Просмотр списка матчей выбранного пользователя")
+async def get_user_matches(id: int):
+    pass
+
+
+@router.get("/me/matches/table-schema", deprecated=True)
 async def get_table_schema():
     response = {
         "columns": [
@@ -114,15 +154,3 @@ async def get_table_schema():
     }
 
     return response
-
-
-# Просмотреть профиль пользователя
-@router.get("/{id}", summary="Просмотр профиля пользователя")
-async def get_by_id(id: int):
-    pass
-
-
-# Просмотреть список матчей пользователя
-@router.get("/{id}/matches", summary="Просмотр списка матчей выбранного пользователя")
-async def get_user_matches(id: int):
-    pass
