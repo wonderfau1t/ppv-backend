@@ -67,6 +67,11 @@ async def update_my_profile(
 async def upload_avatar(service: Annotated[UserService, Depends(get_user_service)], request: Request, file: UploadFile):
     await service.upload_avatar(request.state.user.user_id, file)
 
+# Удаление фото профиля
+@router.delete("/me/avatar")
+async def delete_avatar(service: Annotated[UserService, Depends(get_user_service)], request: Request):
+    await service.delete_avatar(request.state.user.user_id)
+
 # Смена пароля
 @router.patch("/me/password")
 async def change_password(

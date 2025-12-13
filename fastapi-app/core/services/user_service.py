@@ -112,12 +112,45 @@ class UserService:
         if file.size and file.size > 5 * 1024 * 1024:
             raise
 
+        user = await self.repo.get_by_id_with_data(id)
+        old_avatar_path = None
+        if user and user.user_data.avatar_url:
+            old_avatar_path = os.path.join(
+                settings.media.root,
+                user.user_data.avatar_url.lstrip(settings.media.url + "/")
+            )
+
+
         filename = f"{uuid.uuid4()}.jpg"
         relative_path = f"avatars/{filename}"
         absolute_path = os.path.join(settings.media.root, relative_path)
 
         await self.repo.save_file(file, absolute_path)
         await self.repo.update_avatar_url(id, f"{settings.media.url}/{relative_path}")
+
+        if old_avatar_path and os.path.exists(old_avatar_path):
+            try:
+                os.remove(old_avatar_path)
+            except Exception as e:
+                print(f"Failed to remove old avatar: {e}")
+
+    async def delete_avatar(self, id: int):
+        user = await self.repo.get_by_id_with_data(id)
+        avatar_path = None
+        if user and user.user_data.avatar_url:
+            print(user.user_data.avatar_url)
+            avatar_path = os.path.join(
+                settings.media.root,
+                user.user_data.avatar_url.removeprefix(settings.media.url + "/")
+            )
+        print(avatar_path)
+        if avatar_path and os.path.exists(avatar_path):
+            try:
+                os.remove(avatar_path)
+            except Exception as e:
+                print(f"Failed to remove old avatar: {e}")
+
+        await self.repo.update_avatar_url(id, None)
 
     # async def get_matches_of_user(self, id: int) -> MyProfileMatchesListResponse:
     #     matches = await self.repo.get

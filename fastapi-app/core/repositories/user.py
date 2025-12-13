@@ -91,7 +91,7 @@ class UserRepository:
             while chunk := await file.read(1024 * 1024):
                 await f.write(chunk)
 
-    async def update_avatar_url(self, id: int, path: str):
+    async def update_avatar_url(self, id: int, path: str | None):
         stmt = update(UserData).where(UserData.id == id).values(avatar_url=path)
 
         await self.session.execute(stmt)
