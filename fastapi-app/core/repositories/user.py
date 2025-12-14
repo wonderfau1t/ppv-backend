@@ -5,7 +5,7 @@ import aiofiles
 from fastapi import UploadFile
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from core.models import UserAuth, UserData, UserStats
 
@@ -26,7 +26,7 @@ class UserRepository:
         return users.all()
 
     async def list_of_user_data(self) -> Sequence[UserData]:
-        stmt = select(UserData).options(joinedload(UserData.stats))
+        stmt = select(UserData).options(selectinload(UserData.stats))
         users = await self.session.scalars(stmt)
 
         return users.all()
