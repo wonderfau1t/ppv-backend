@@ -30,6 +30,17 @@ class SchemaService:
             ]
         )
 
+        # Таблица пользователей для админа
+        admin_users = TableSchema(
+            columns=[
+                ColumnSchema(key="player", title="ФИО Игрока", type="player"),
+                ColumnSchema(key="gamesCount", title="Количество сыгранных игр", type="number"),
+                ColumnSchema(key="winsCount", title="Количество побед", type="number"),
+                ColumnSchema(key="role", title="Роль", type="role"),
+                ColumnSchema(key="status", title="Статус", type="status"),
+            ]
+        )
+
         # Общая история матчей
         matches_history = TableSchema(
             columns=[
@@ -69,6 +80,7 @@ class SchemaService:
         )
 
         self.register("users", users)
+        self.register("admin-users", admin_users)
         self.register("matches-history", matches_history)
         self.register("user-matches-history", user_matches_history)
         self.register("match-with-sets", match_with_sets)
