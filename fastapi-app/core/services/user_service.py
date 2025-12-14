@@ -15,6 +15,7 @@ from core.schemas.user import (
     ChangePasswordRequest,
     MyProfileResponse,
     MyProfileStatsResponse,
+    PlayerSchema,
     RoleSchema,
     StatusSchema,
     UpdateProfileRequest,
@@ -55,10 +56,12 @@ class UserService:
                 items=[
                     AdminUsersListItem(
                         id=user.id,
-                        full_name=user.user_data.full_name,
-                        avatar=AvatarSchema(
-                            alter=user.user_data.initials,
-                            path=user.user_data.avatar_url,
+                        player=PlayerSchema(
+                            full_name=user.user_data.full_name,
+                            avatar=AvatarSchema(
+                                alter=user.user_data.initials,
+                                path=user.user_data.avatar_url,
+                            ),
                         ),
                         games_count=user.user_data.stats.amateur_games_count
                         + user.user_data.stats.tournament_games_count,
@@ -79,10 +82,12 @@ class UserService:
             items=[
                 UsersListItem(
                     id=user.id,
-                    full_name=user.user_data.full_name,
-                    avatar=AvatarSchema(
-                        alter=user.user_data.initials,
-                        path=user.user_data.avatar_url,
+                    player=PlayerSchema(
+                        full_name=user.user_data.full_name,
+                        avatar=AvatarSchema(
+                            alter=user.user_data.initials,
+                            path=user.user_data.avatar_url,
+                        ),
                     ),
                     games_count=user.user_data.stats.amateur_games_count
                     + user.user_data.stats.tournament_games_count,

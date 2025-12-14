@@ -17,11 +17,15 @@ class ChangePasswordRequest(BaseSchema):
     new_password: str
 
 
+class PlayerSchema(BaseSchema):
+    full_name: str
+    avatar: AvatarSchema
+
+
 # ---- Список пользователей в системе ----
 class UsersListItem(BaseSchema):
     id: int
-    full_name: str
-    avatar: AvatarSchema
+    player: PlayerSchema
     games_count: int
     wins_count: int
 
