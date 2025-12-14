@@ -18,6 +18,7 @@ class ChangePasswordRequest(BaseSchema):
 
 
 class PlayerSchema(BaseSchema):
+    id: int
     full_name: str
     avatar: AvatarSchema
 

@@ -57,6 +57,7 @@ class UserService:
                     AdminUsersListItem(
                         id=user.id,
                         player=PlayerSchema(
+                            id=user.id,
                             full_name=user.user_data.full_name,
                             avatar=AvatarSchema(
                                 alter=user.user_data.initials,
@@ -83,6 +84,7 @@ class UserService:
                 UsersListItem(
                     id=user.id,
                     player=PlayerSchema(
+                        id=user.id,
                         full_name=user.user_data.full_name,
                         avatar=AvatarSchema(
                             alter=user.user_data.initials,
