@@ -23,7 +23,7 @@ class UsersListResponse(BaseSchema):
     id: int
     full_name: str
     avatar: AvatarSchema
-    amateur_games_count: int
+    games_count: int
     wins_count: int
 
 

@@ -56,7 +56,7 @@ class UserService:
                         alter=user.user_data.initials,
                         path=user.user_data.avatar_url,
                     ),
-                    amateur_games_count=user.user_data.stats.amateur_games_count,
+                    games_count=user.user_data.stats.amateur_games_count + user.user_data.stats.tournament_games_count,
                     wins_count=user.user_data.stats.wins_count,
                     role=RoleSchema(
                         id=user.role_id,
@@ -74,7 +74,7 @@ class UserService:
                     alter=user.user_data.initials,
                     path=user.user_data.avatar_url,
                 ),
-                amateur_games_count=user.user_data.stats.amateur_games_count,
+                games_count=user.user_data.stats.amateur_games_count + user.user_data.stats.tournament_games_count,
                 wins_count=user.user_data.stats.wins_count,
             )
             for user in users
