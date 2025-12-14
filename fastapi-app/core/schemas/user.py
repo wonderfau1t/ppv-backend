@@ -3,7 +3,6 @@ from typing import List
 
 from core.schemas.base import BaseSchema
 from core.schemas.match import AvatarSchema
-from core.models.user import UserStatus
 
 
 class UpdateProfileRequest(BaseSchema):
@@ -19,7 +18,7 @@ class ChangePasswordRequest(BaseSchema):
 
 
 # ---- Список пользователей в системе ----
-class UsersListResponse(BaseSchema):
+class UsersListItem(BaseSchema):
     id: int
     full_name: str
     avatar: AvatarSchema
@@ -37,9 +36,16 @@ class StatusSchema(BaseSchema):
     name: str
 
 
-class AdminUsersListResponse(UsersListResponse):
+class AdminUsersListItem(UsersListItem):
     role: RoleSchema
     status: StatusSchema
+
+
+class UsersListResponse(BaseSchema):
+    total: int
+    limit: int
+    offset: int
+    items: List[UsersListItem] | List[AdminUsersListItem]
 
 
 # ---- Просмотр своего профиля ----

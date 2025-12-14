@@ -3,7 +3,7 @@ from typing import Sequence
 
 import aiofiles
 from fastapi import UploadFile
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
@@ -100,10 +100,19 @@ class UserRepository:
     async def delete(self):
         pass
 
-    async def get_list_with_data(self):
-        stmt = select(UserAuth).options(
-            joinedload(UserAuth.role), selectinload(UserAuth.user_data).selectinload(UserData.stats)
+    async def get_list_with_data(self, limit: int, offset: int) -> tuple[int, Sequence[UserAuth]]:
+        total_result = await self.session.execute(select(func.count()).select_from(UserAuth))
+        total = total_result.scalar_one()
+
+        stmt = (
+            select(UserAuth)
+            .options(
+                joinedload(UserAuth.role),
+                selectinload(UserAuth.user_data).selectinload(UserData.stats),
+            )
+            .offset(offset)
+            .limit(limit)
         )
         users = await self.session.scalars(stmt)
 
-        return users.all()
+        return total, users.all()

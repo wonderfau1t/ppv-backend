@@ -1,6 +1,5 @@
 import os
 import uuid
-from typing import List
 
 from fastapi import UploadFile
 
@@ -11,7 +10,7 @@ from core.models import UserAuth, UserData
 from core.repositories import UserRepository
 from core.schemas.auth import RegisterSchema
 from core.schemas.user import (
-    AdminUsersListResponse,
+    AdminUsersListItem,
     AvatarSchema,
     ChangePasswordRequest,
     MyProfileResponse,
@@ -19,6 +18,7 @@ from core.schemas.user import (
     RoleSchema,
     StatusSchema,
     UpdateProfileRequest,
+    UsersListItem,
     UsersListResponse,
 )
 from core.utils.bcrypt import check_password, hash_password
@@ -44,41 +44,53 @@ class UserService:
 
         return user_id
 
-    async def list(self, actor_role: str) -> List[UsersListResponse] | List[AdminUsersListResponse]:
-        users = await self.repo.get_list_with_data()
+    async def list(self, actor_role: str, limit: int, offset: int) -> UsersListResponse:
+        total, users = await self.repo.get_list_with_data(limit, offset)
 
         if actor_role == "admin":
-            return [
-                AdminUsersListResponse(
+            return UsersListResponse(
+                total=total,
+                limit=limit,
+                offset=offset,
+                items=[
+                    AdminUsersListItem(
+                        id=user.id,
+                        full_name=user.user_data.full_name,
+                        avatar=AvatarSchema(
+                            alter=user.user_data.initials,
+                            path=user.user_data.avatar_url,
+                        ),
+                        games_count=user.user_data.stats.amateur_games_count
+                        + user.user_data.stats.tournament_games_count,
+                        wins_count=user.user_data.stats.wins_count,
+                        role=RoleSchema(
+                            id=user.role_id,
+                            name=user.role.name,
+                        ),
+                        status=StatusSchema(id=user.status.value, name=user.status.label),
+                    )
+                    for user in users
+                ],
+            )
+        return UsersListResponse(
+            total=total,
+            limit=limit,
+            offset=offset,
+            items=[
+                UsersListItem(
                     id=user.id,
                     full_name=user.user_data.full_name,
                     avatar=AvatarSchema(
                         alter=user.user_data.initials,
                         path=user.user_data.avatar_url,
                     ),
-                    games_count=user.user_data.stats.amateur_games_count + user.user_data.stats.tournament_games_count,
+                    games_count=user.user_data.stats.amateur_games_count
+                    + user.user_data.stats.tournament_games_count,
                     wins_count=user.user_data.stats.wins_count,
-                    role=RoleSchema(
-                        id=user.role_id,
-                        name=user.role.name,
-                    ),
-                    status=StatusSchema(id=user.status.value, name=user.status.label),
                 )
                 for user in users
-            ]
-        return [
-            UsersListResponse(
-                id=user.id,
-                full_name=user.user_data.full_name,
-                avatar=AvatarSchema(
-                    alter=user.user_data.initials,
-                    path=user.user_data.avatar_url,
-                ),
-                games_count=user.user_data.stats.amateur_games_count + user.user_data.stats.tournament_games_count,
-                wins_count=user.user_data.stats.wins_count,
-            )
-            for user in users
-        ]
+            ],
+        )
 
     async def get_by_id(self, id: int) -> MyProfileResponse:
         user = await self.repo.get_by_id(id)

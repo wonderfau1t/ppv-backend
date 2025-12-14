@@ -1,10 +1,9 @@
-from typing import Annotated, List
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Request, Response, UploadFile, status
 
 from api.dependencies import get_match_service, get_user_service
 from core.schemas.user import (
-    AdminUsersListResponse,
     ChangePasswordRequest,
     MyProfileMatchesListResponse,
     MyProfileResponse,
@@ -20,14 +19,17 @@ router = APIRouter()
 # Список пользователей
 @router.get(
     "",
-    response_model=List[UsersListResponse] | List[AdminUsersListResponse],
+    response_model=UsersListResponse,
     summary="Список зарегистрированных пользователей",
 )
 async def list(
-    service: Annotated[UserService, Depends(get_user_service)], request: Request
-) -> List[UsersListResponse] | List[AdminUsersListResponse]:
+    service: Annotated[UserService, Depends(get_user_service)],
+    request: Request,
+    limit: int = Query(10, ge=1, le=20),
+    offset: int = Query(0, ge=0),
+) -> UsersListResponse:
     print(request.state.user.role)
-    users = await service.list(request.state.user.role)
+    users = await service.list(request.state.user.role, limit, offset)
     return users
 
 
