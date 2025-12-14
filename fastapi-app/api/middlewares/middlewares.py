@@ -23,6 +23,8 @@ def register_middlewares(app: FastAPI):
     # Аутентификация
     @app.middleware("http")
     async def auth_middleware(request: Request, call_next: CallNext) -> Response:
+        if request.method == "OPTIONS":
+            return await call_next(request)
         # Паблик руты
         # TODO: избавиться от хардкода
         public_paths = {
