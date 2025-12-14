@@ -11,10 +11,13 @@ from core.models import UserAuth, UserData
 from core.repositories import UserRepository
 from core.schemas.auth import RegisterSchema
 from core.schemas.user import (
+    AdminUsersListResponse,
     AvatarSchema,
     ChangePasswordRequest,
     MyProfileResponse,
     MyProfileStatsResponse,
+    RoleSchema,
+    StatusSchema,
     UpdateProfileRequest,
     UsersListResponse,
 )
@@ -41,23 +44,41 @@ class UserService:
 
         return user_id
 
-    async def list(self) -> List[UsersListResponse]:
-        users = await self.repo.list_of_user_data()
-        if not users:
-            raise NotFoundError("Table of users is empty")
+    async def list(self, actor_role: str) -> List[UsersListResponse] | List[AdminUsersListResponse]:
+        users = await self.repo.get_list_with_data()
 
-        dtos = [
+        if actor_role == "admin":
+            return [
+                AdminUsersListResponse(
+                    id=user.id,
+                    full_name=user.user_data.full_name,
+                    avatar=AvatarSchema(
+                        alter=user.user_data.initials,
+                        path=user.user_data.avatar_url,
+                    ),
+                    amateur_games_count=user.user_data.stats.amateur_games_count,
+                    wins_count=user.user_data.stats.wins_count,
+                    role=RoleSchema(
+                        id=user.role_id,
+                        name=user.role.name,
+                    ),
+                    status=StatusSchema(id=user.status.value, name=user.status.label),
+                )
+                for user in users
+            ]
+        return [
             UsersListResponse(
                 id=user.id,
-                full_name=user.full_name,
-                avatar=AvatarSchema(alter=user.initials, path=user.avatar_url),
-                amateur_games_count=user.stats.amateur_games_count,
-                wins_count=user.stats.wins_count,
+                full_name=user.user_data.full_name,
+                avatar=AvatarSchema(
+                    alter=user.user_data.initials,
+                    path=user.user_data.avatar_url,
+                ),
+                amateur_games_count=user.user_data.stats.amateur_games_count,
+                wins_count=user.user_data.stats.wins_count,
             )
             for user in users
         ]
-
-        return dtos
 
     async def get_by_id(self, id: int) -> MyProfileResponse:
         user = await self.repo.get_by_id(id)

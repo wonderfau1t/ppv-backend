@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query, Request, Response, UploadFile, st
 
 from api.dependencies import get_match_service, get_user_service
 from core.schemas.user import (
+    AdminUsersListResponse,
     ChangePasswordRequest,
     MyProfileMatchesListResponse,
     MyProfileResponse,
@@ -19,13 +20,14 @@ router = APIRouter()
 # Список пользователей
 @router.get(
     "",
-    response_model=List[UsersListResponse],
+    response_model=List[UsersListResponse] | List[AdminUsersListResponse],
     summary="Список зарегистрированных пользователей",
 )
 async def list(
     service: Annotated[UserService, Depends(get_user_service)], request: Request
-) -> List[UsersListResponse]:
-    users = await service.list()
+) -> List[UsersListResponse] | List[AdminUsersListResponse]:
+    print(request.state.user.role)
+    users = await service.list(request.state.user.role)
     return users
 
 

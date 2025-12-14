@@ -18,7 +18,7 @@ class AuthService:
         if not valid:
             raise InvalidCredentialsError()
 
-        token = create_access_token(JWTClaims(user_id=user.id, role="user"))
+        token = create_access_token(JWTClaims(user_id=user.id, role=user.role.code))
 
         return user.role.code, token
 

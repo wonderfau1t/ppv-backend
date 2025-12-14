@@ -1,5 +1,7 @@
+from enum import Enum
 from typing import TYPE_CHECKING, List, Optional
 
+from sqlalchemy import Enum as SQLEnum
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -10,13 +12,30 @@ if TYPE_CHECKING:
     from .role import Role
 
 
+class UserStatus(str, Enum):
+    PENDING = "pending"
+    ACTIVE = "active"
+    BLOCKED = "blocked"
+
+    @property
+    def label(self):
+        return {
+            UserStatus.PENDING: "На рассмотрении",
+            UserStatus.ACTIVE: "Активный",
+            UserStatus.BLOCKED: "Заблокирован",
+        }[self]
+
+
 class UserAuth(Base):
     __tablename__ = "users_auth"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     login: Mapped[str] = mapped_column(unique=True)
     password_hash: Mapped[str]
-    role_id: Mapped[Optional[int]] = mapped_column(ForeignKey("roles.id"))
+    role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"))
+    status: Mapped[UserStatus] = mapped_column(
+        SQLEnum(UserStatus, name="user_status"), default=UserStatus.PENDING
+    )
 
     role: Mapped["Role"] = relationship(uselist=False, back_populates="users")
     user_data: Mapped["UserData"] = relationship(

@@ -99,3 +99,11 @@ class UserRepository:
 
     async def delete(self):
         pass
+
+    async def get_list_with_data(self):
+        stmt = select(UserAuth).options(
+            joinedload(UserAuth.role), selectinload(UserAuth.user_data).selectinload(UserData.stats)
+        )
+        users = await self.session.scalars(stmt)
+
+        return users.all()

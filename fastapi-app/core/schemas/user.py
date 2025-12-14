@@ -3,6 +3,7 @@ from typing import List
 
 from core.schemas.base import BaseSchema
 from core.schemas.match import AvatarSchema
+from core.models.user import UserStatus
 
 
 class UpdateProfileRequest(BaseSchema):
@@ -21,9 +22,24 @@ class ChangePasswordRequest(BaseSchema):
 class UsersListResponse(BaseSchema):
     id: int
     full_name: str
+    avatar: AvatarSchema
     amateur_games_count: int
     wins_count: int
-    avatar: AvatarSchema
+
+
+class RoleSchema(BaseSchema):
+    id: int
+    name: str
+
+
+class StatusSchema(BaseSchema):
+    id: str
+    name: str
+
+
+class AdminUsersListResponse(UsersListResponse):
+    role: RoleSchema
+    status: StatusSchema
 
 
 # ---- Просмотр своего профиля ----
