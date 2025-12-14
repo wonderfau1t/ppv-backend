@@ -3,8 +3,8 @@ import random
 from faker import Faker
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.models import Match, MatchSet, UserAuth, UserData
-from core.repositories import MatchRepository, UserRepository
+from core.models import Match, MatchSet, Role, UserAuth, UserData
+from core.repositories import MatchRepository, RoleRepository, UserRepository
 from core.utils.bcrypt import hash_password
 
 fake = Faker("ru_RU")
@@ -13,11 +13,16 @@ fake = Faker("ru_RU")
 async def create_demo_data(session: AsyncSession):
     user_repo = UserRepository(session)
     match_repo = MatchRepository(session)
+    role_repo = RoleRepository(session)
 
     existing_users = await user_repo.list_of_user_auth()
     if existing_users:
         print("Таблица не пуста — отмена генерации.")
         return
+
+    print("Создание ролей...")
+    admin_role_id = await role_repo.create(Role(code="admin", name="Администратор"))
+    user_role_id = await role_repo.create(Role(code="user", name="Пользователь"))
 
     print("Создание 50 пользователей...")
 
@@ -33,13 +38,27 @@ async def create_demo_data(session: AsyncSession):
             middle_name=mn,
             last_name=ln,
             user_auth=UserAuth(
-                login=f"user{i}",
-                password_hash=hash_password("test"),
+                login=f"user{i}", password_hash=hash_password("test"), role_id=user_role_id
             ),
         )
 
         uid = await user_repo.create(user)
         users.append(uid)
+
+    admin = UserData(
+        first_name=fake.first_name_male(),
+        middle_name=fake.middle_name_male(),
+        last_name=fake.last_name_male(),
+        user_auth=UserAuth(
+            login="admin",
+            password_hash=hash_password("admin"),
+            role_id=admin_role_id,
+        ),
+    )
+
+    print("Создание администратора...")
+    admin_uid = await user_repo.create(admin)
+    users.append(admin_uid)
 
     print("Создание случайных матчей...")
 

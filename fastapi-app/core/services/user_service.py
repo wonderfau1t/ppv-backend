@@ -1,12 +1,12 @@
 import os
-from typing import List
 import uuid
+from typing import List
 
 from fastapi import UploadFile
 
 from core import settings
 from core.exceptions.auth import InvalidCredentialsError
-from core.exceptions.basic import NotFoundError
+from core.exceptions.crud import NotFoundError
 from core.models import UserAuth, UserData
 from core.repositories import UserRepository
 from core.schemas.auth import RegisterSchema
@@ -51,6 +51,8 @@ class UserService:
                 id=user.id,
                 full_name=user.full_name,
                 avatar=AvatarSchema(alter=user.initials, path=user.avatar_url),
+                amateur_games_count=user.stats.amateur_games_count,
+                wins_count=user.stats.wins_count,
             )
             for user in users
         ]
@@ -105,7 +107,7 @@ class UserService:
             raise InvalidCredentialsError("Invalid password")
 
         return await self.repo.update_password(user, hash_password(data.new_password))
-    
+
     async def upload_avatar(self, id: int, file: UploadFile):
         if file.content_type not in ("image/jpeg", "image/png", "image/webp"):
             raise
@@ -116,10 +118,8 @@ class UserService:
         old_avatar_path = None
         if user and user.user_data.avatar_url:
             old_avatar_path = os.path.join(
-                settings.media.root,
-                user.user_data.avatar_url.lstrip(settings.media.url + "/")
+                settings.media.root, user.user_data.avatar_url.lstrip(settings.media.url + "/")
             )
-
 
         filename = f"{uuid.uuid4()}.jpg"
         relative_path = f"avatars/{filename}"
@@ -141,7 +141,7 @@ class UserService:
             print(user.user_data.avatar_url)
             avatar_path = os.path.join(
                 settings.media.root,
-                user.user_data.avatar_url.removeprefix(settings.media.url + "/")
+                user.user_data.avatar_url.removeprefix(settings.media.url + "/"),
             )
         print(avatar_path)
         if avatar_path and os.path.exists(avatar_path):
@@ -151,6 +151,3 @@ class UserService:
                 print(f"Failed to remove old avatar: {e}")
 
         await self.repo.update_avatar_url(id, None)
-
-    # async def get_matches_of_user(self, id: int) -> MyProfileMatchesListResponse:
-    #     matches = await self.repo.get

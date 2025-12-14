@@ -1,9 +1,8 @@
 from typing import Annotated, List
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, Response, UploadFile, status
+from fastapi import APIRouter, Depends, Query, Request, Response, UploadFile, status
 
 from api.dependencies import get_match_service, get_user_service
-from core.exceptions.auth import InvalidCredentialsError
 from core.schemas.user import (
     ChangePasswordRequest,
     MyProfileMatchesListResponse,
@@ -24,13 +23,9 @@ router = APIRouter()
     summary="Список зарегистрированных пользователей",
 )
 async def list(
-    service: Annotated[UserService, Depends(get_user_service)],
+    service: Annotated[UserService, Depends(get_user_service)], request: Request
 ) -> List[UsersListResponse]:
-    try:
-        users = await service.list()
-    except:
-        pass
-
+    users = await service.list()
     return users
 
 
@@ -43,11 +38,7 @@ async def list(
 async def get_my_profile(
     service: Annotated[UserService, Depends(get_user_service)], request: Request
 ) -> MyProfileResponse:
-    try:
-        user = await service.get_by_id(request.state.user.user_id)
-    except:
-        pass
-
+    user = await service.get_by_id(request.state.user.user_id)
     return user
 
 
@@ -64,13 +55,19 @@ async def update_my_profile(
 
 # Установка фото профиля
 @router.post("/me/avatar")
-async def upload_avatar(service: Annotated[UserService, Depends(get_user_service)], request: Request, file: UploadFile):
+async def upload_avatar(
+    service: Annotated[UserService, Depends(get_user_service)], request: Request, file: UploadFile
+):
     await service.upload_avatar(request.state.user.user_id, file)
+
 
 # Удаление фото профиля
 @router.delete("/me/avatar")
-async def delete_avatar(service: Annotated[UserService, Depends(get_user_service)], request: Request):
+async def delete_avatar(
+    service: Annotated[UserService, Depends(get_user_service)], request: Request
+):
     await service.delete_avatar(request.state.user.user_id)
+
 
 # Смена пароля
 @router.patch("/me/password")
@@ -79,10 +76,7 @@ async def change_password(
     request: Request,
     data: ChangePasswordRequest,
 ):
-    try:
-        update = await service.update_password(request.state.user.user_id, data)
-    except InvalidCredentialsError as e:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
+    update = await service.update_password(request.state.user.user_id, data)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -95,11 +89,7 @@ async def change_password(
 async def get_my_stats(
     service: Annotated[UserService, Depends(get_user_service)], request: Request
 ) -> MyProfileStatsResponse:
-    try:
-        stats = await service.get_stats(request.state.user.user_id)
-    except:
-        pass
-
+    stats = await service.get_stats(request.state.user.user_id)
     return stats
 
 
@@ -115,10 +105,7 @@ async def get_my_matches(
     limit: int = Query(10, ge=1, le=20),
     offset: int = Query(0, ge=0),
 ) -> MyProfileMatchesListResponse:
-    try:
-        matches = await service.get_matches_by_user_id(request.state.user.user_id, limit, offset)
-    except:
-        pass
+    matches = await service.get_matches_by_user_id(request.state.user.user_id, limit, offset)
     return matches
 
 
@@ -132,35 +119,3 @@ async def get_by_id(id: int):
 @router.get("/{id}/matches", summary="Просмотр списка матчей выбранного пользователя")
 async def get_user_matches(id: int):
     pass
-
-
-@router.get("/me/matches/table-schema", deprecated=True)
-async def get_table_schema():
-    response = {
-        "columns": [
-            {"key": "id", "title": "ID", "type": "str"},
-            {"key": "date", "title": "Дата", "type": "date"},
-            {
-                "key": "opponent",
-                "title": "Противник",
-                "type": "player",
-                "fields": [
-                    {"key": "id", "type": "int"},
-                    {"key": "fullName", "type": "str"},
-                ],
-            },
-            {"key": "score", "title": "Счет", "type": "str"},
-            {
-                "key": "winner",
-                "title": "Победитель",
-                "type": "player",
-                "fields": [
-                    {"key": "id", "type": "int"},
-                    {"key": "fullName", "type": "str"},
-                ],
-            },
-            {"key": "type", "title": "Тип игры", "type": "str"},
-        ]
-    }
-
-    return response

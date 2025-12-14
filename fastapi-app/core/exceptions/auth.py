@@ -1,6 +1,13 @@
-class UserNotFoundError(Exception):
+from .basic import AppError
+
+
+class UnauthorizedError(AppError):
     pass
 
 
-class InvalidCredentialsError(Exception):
+class InvalidCredentialsError(AppError):
+    pass
+
+
+class ForbiddenError(AppError):
     pass

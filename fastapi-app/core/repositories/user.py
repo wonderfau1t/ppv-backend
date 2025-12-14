@@ -26,13 +26,13 @@ class UserRepository:
         return users.all()
 
     async def list_of_user_data(self) -> Sequence[UserData]:
-        stmt = select(UserData)
+        stmt = select(UserData).options(joinedload(UserData.stats))
         users = await self.session.scalars(stmt)
 
         return users.all()
 
     async def get_by_login(self, login: str) -> UserAuth | None:
-        stmt = select(UserAuth).where(UserAuth.login == login)
+        stmt = select(UserAuth).where(UserAuth.login == login).options(joinedload(UserAuth.role))
         user = await self.session.scalar(stmt)
 
         return user

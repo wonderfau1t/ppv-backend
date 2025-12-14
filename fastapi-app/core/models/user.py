@@ -7,6 +7,7 @@ from core.models.base import Base
 
 if TYPE_CHECKING:
     from .match import Match
+    from .role import Role
 
 
 class UserAuth(Base):
@@ -15,7 +16,9 @@ class UserAuth(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     login: Mapped[str] = mapped_column(unique=True)
     password_hash: Mapped[str]
+    role_id: Mapped[Optional[int]] = mapped_column(ForeignKey("roles.id"))
 
+    role: Mapped["Role"] = relationship(uselist=False, back_populates="users")
     user_data: Mapped["UserData"] = relationship(
         cascade="all, delete-orphan", back_populates="user_auth", uselist=False
     )

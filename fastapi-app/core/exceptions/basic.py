@@ -1,2 +1,4 @@
-class NotFoundError(Exception):
-    pass
+class AppError(Exception):
+    """
+    Базовое исключение приложения
+    """

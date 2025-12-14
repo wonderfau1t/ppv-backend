@@ -1,4 +1,4 @@
-from core.exceptions.basic import NotFoundError
+from core.exceptions.crud import NotFoundError
 from core.repositories import MatchRepository
 from core.schemas.match import (
     AvatarSchema,
@@ -32,18 +32,24 @@ class MatchService:
                     player1=MatchListItemPlayerSchema(
                         id=match.player1.id,
                         full_name=match.player1.full_name,
-                        avatar=AvatarSchema(alter=match.player1.initials, path=match.player1.avatar_url),
+                        avatar=AvatarSchema(
+                            alter=match.player1.initials, path=match.player1.avatar_url
+                        ),
                     ),
                     player2=MatchListItemPlayerSchema(
                         id=match.player2.id,
                         full_name=match.player2.full_name,
-                        avatar=AvatarSchema(alter=match.player2.initials, path=match.player2.avatar_url),
+                        avatar=AvatarSchema(
+                            alter=match.player2.initials, path=match.player2.avatar_url
+                        ),
                     ),
                     score=f"{match.player1_score}:{match.player2_score}",
                     winner=MatchListItemPlayerSchema(
                         id=match.winner.id,
                         full_name=match.winner.full_name,
-                        avatar=AvatarSchema(alter=match.winner.initials, path=match.winner.avatar_url),
+                        avatar=AvatarSchema(
+                            alter=match.winner.initials, path=match.winner.avatar_url
+                        ),
                     ),
                     type=match.type,
                 )
@@ -121,35 +127,3 @@ class MatchService:
             offset=offset,
             items=matches_dtos,
         )
-
-    # async def create_match(self, data: CreateMatchRequest):
-    #     # Создание матча
-    #     match = Match(player1_id=data.player1_id, player2_id=data.player2_id)
-    #     id = await self.repo.create(match)
-
-    #     # Создание пустых сетов
-    #     match_sets = []
-    #     for i in range(1, data.best_of + 1):
-    #         match_set = MatchSet(
-    #             match_id=match.id, set_number=i, player1_score=0, player2_score=0
-    #         )
-    #         match_sets.append(match_set)
-
-    #     self.session.add_all(match_sets)
-    #     await self.session.commit()
-
-    #     return match.id
-
-    # async def update_set(self, data: UpdateSetSchema):
-    #     stmt = select(MatchSet).where(
-    #         MatchSet.match_id == data.match_id, MatchSet.set_number == data.set_number
-    #     )
-    #     match_set = await self.session.scalar(stmt)
-    #     if not match_set:
-    #         return None
-
-    #     match_set.player1_score = data.player1_score
-    #     match_set.player2_score = data.player2_score
-    #     match_set.winner_id = data.winner_id
-
-    #     await self.session.commit()

@@ -8,15 +8,15 @@ from core.services import AuthService, MatchService, SchemaService, UserService,
 from .repositories import get_match_repository, get_user_repository
 
 
-def get_user_service(repo: Annotated[UserRepository, Depends(get_user_repository)]):
+def get_user_service(repo: Annotated[UserRepository, Depends(get_user_repository)]) -> UserService:
     return UserService(repo)
 
 
-def get_auth_service(repo: Annotated[UserRepository, Depends(get_user_repository)]):
+def get_auth_service(repo: Annotated[UserRepository, Depends(get_user_repository)]) -> AuthService:
     return AuthService(repo)
 
 
-def get_match_service(repo: Annotated[MatchRepository, Depends(get_match_repository)]):
+def get_match_service(repo: Annotated[MatchRepository, Depends(get_match_repository)]) -> MatchService:
     return MatchService(repo)
 
 

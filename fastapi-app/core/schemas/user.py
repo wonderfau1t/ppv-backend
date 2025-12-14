@@ -21,6 +21,8 @@ class ChangePasswordRequest(BaseSchema):
 class UsersListResponse(BaseSchema):
     id: int
     full_name: str
+    amateur_games_count: int
+    wins_count: int
     avatar: AvatarSchema
 
 
