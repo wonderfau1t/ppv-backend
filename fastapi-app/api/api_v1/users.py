@@ -19,8 +19,9 @@ router = APIRouter()
 
 @router.get(
     "",
-    response_model=UsersListResponse,
     summary="Список зарегистрированных пользователей",
+    response_model=UsersListResponse,
+    tags=["Админ"],
 )
 async def list(
     service: Annotated[UserService, Depends(get_user_service)],
@@ -28,74 +29,87 @@ async def list(
     limit: int = Query(10, ge=1, le=20),
     offset: int = Query(0, ge=0),
 ) -> UsersListResponse:
-    print(request.state.user.role)
     users = await service.list(request.state.user.role, limit, offset)
     return users
 
 
 @router.get(
     "/me",
-    response_model=MyProfileResponse,
     summary="Просмотр собственного профиля",
+    response_model=MyProfileResponse,
 )
 async def get_my_profile(
-    service: Annotated[UserService, Depends(get_user_service)], request: Request
+    service: Annotated[UserService, Depends(get_user_service)],
+    request: Request,
 ) -> MyProfileResponse:
     user = await service.get_by_id(request.state.user.user_id)
     return user
 
 
-@router.put("/me", summary="Обновление информации в профиле")
+@router.put(
+    "/me",
+    summary="Обновление информации в профиле",
+)
 async def update_my_profile(
     service: Annotated[UserService, Depends(get_user_service)],
     request: Request,
     data: UpdateProfileRequest,
-):
-    update = await service.update_profile(request.state.user.user_id, data)
+) -> Response:
+    await service.update_profile(request.state.user.user_id, data)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-# Установка фото профиля
-@router.post("/me/avatar", summary="Загрузка фото личного профиля")
+@router.post(
+    "/me/avatar",
+    summary="Загрузка фото личного профиля",
+)
 async def upload_avatar(
-    service: Annotated[UserService, Depends(get_user_service)], request: Request, file: UploadFile
-):
+    service: Annotated[UserService, Depends(get_user_service)],
+    request: Request,
+    file: UploadFile,
+) -> Response:
     await service.upload_avatar(request.state.user.user_id, file)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-# Удаление фото профиля
-@router.delete("/me/avatar", summary="Удаление фото профиля")
+@router.delete(
+    "/me/avatar",
+    summary="Удаление фото профиля",
+)
 async def delete_avatar(
-    service: Annotated[UserService, Depends(get_user_service)], request: Request
-):
+    service: Annotated[UserService, Depends(get_user_service)],
+    request: Request,
+) -> Response:
     await service.delete_avatar(request.state.user.user_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-# Смена пароля
-@router.patch("/me/password", summary="Смена пароля")
+@router.patch(
+    "/me/password",
+    summary="Смена пароля",
+)
 async def change_password(
     service: Annotated[UserService, Depends(get_user_service)],
     request: Request,
     data: ChangePasswordRequest,
-):
+) -> Response:
     update = await service.update_password(request.state.user.user_id, data)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-# Просмотр статистики
 @router.get(
     "/me/stats",
     summary="Просмотр своей статистики",
     response_model=MyProfileStatsResponse,
 )
 async def get_my_stats(
-    service: Annotated[UserService, Depends(get_user_service)], request: Request
+    service: Annotated[UserService, Depends(get_user_service)],
+    request: Request,
 ) -> MyProfileStatsResponse:
     stats = await service.get_stats(request.state.user.user_id)
     return stats
 
 
-# Просмотреть список собственных матчей
 @router.get(
     "/me/matches",
     summary="Просмотр списка матчей, в которых участвовал",
@@ -111,24 +125,16 @@ async def get_my_matches(
     return matches
 
 
-@router.patch("/{id}/role")
+@router.patch(
+    "/{id}/role",
+    summary="Обновление роли пользователя",
+    tags=["Админ"],
+)
 async def update_user_role(
+    service: Annotated[UserService, Depends(get_user_service)],
     id: int,
     data: UpdateRoleRequest,
-    service: Annotated[UserService, Depends(get_user_service)],
     user=Depends(require_role("admin")),
-):
+) -> Response:
     await service.update_role(id, data.code)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
-# Просмотреть профиль пользователя
-@router.get("/{id}", summary="Просмотр профиля пользователя")
-async def get_by_id(id: int):
-    pass
-
-
-# Просмотреть список матчей пользователя
-@router.get("/{id}/matches", summary="Просмотр списка матчей выбранного пользователя")
-async def get_user_matches(id: int):
-    pass

@@ -5,7 +5,7 @@ from fastapi import UploadFile
 
 from core import settings
 from core.exceptions.auth import InvalidCredentialsError
-from core.exceptions.crud import NotFoundError
+from core.exceptions.crud import AlreadyExistsError, NotFoundError
 from core.models import UserAuth, UserData
 from core.repositories import RoleRepository, UserRepository
 from core.schemas.auth import RegisterSchema
@@ -30,10 +30,10 @@ class UserService:
         self.user_repo = user_repo
         self.role_repo = role_repo
 
-    async def register(self, data: RegisterSchema):
+    async def register(self, data: RegisterSchema) -> int:
         exists = await self.user_repo.get_by_login(data.login)
         if exists:
-            raise ValueError("login already exists")
+            raise AlreadyExistsError(f"login {data.login} already exists")
 
         user_auth = UserAuth(login=data.login, password_hash=hash_password(data.password))
         user_data = UserData(
@@ -105,7 +105,7 @@ class UserService:
         if not user:
             raise NotFoundError(f"User {id} not found")
 
-        dto = MyProfileResponse(
+        return MyProfileResponse(
             id=user.id,
             first_name=user.first_name,
             middle_name=user.middle_name if user.middle_name is not None else "",
@@ -115,16 +115,12 @@ class UserService:
             role="Пользователь",
         )
 
-        return dto
-
     async def get_stats(self, id: int) -> MyProfileStatsResponse:
         stats = await self.user_repo.get_stats(id)
         if not stats:
             raise NotFoundError(f"Stats of User {id} not found")
 
-        dto = MyProfileStatsResponse.model_validate(stats)
-
-        return dto
+        return MyProfileStatsResponse.model_validate(stats)
 
     async def update_profile(self, id: int, data: UpdateProfileRequest):
         user = await self.user_repo.get_by_id_with_data(id)
@@ -184,7 +180,6 @@ class UserService:
                 settings.media.root,
                 user.user_data.avatar_url.removeprefix(settings.media.url + "/"),
             )
-        print(avatar_path)
         if avatar_path and os.path.exists(avatar_path):
             try:
                 os.remove(avatar_path)
@@ -197,9 +192,9 @@ class UserService:
         user = await self.user_repo.get_user_auth_by_id(user_id)
         if not user:
             raise NotFoundError(f"User {user_id} not found")
-        
+
         role = await self.role_repo.get_by_code(role_code)
         if not role:
             raise NotFoundError(f"Role {role_code} not found")
-        
+
         await self.user_repo.update_role(user, role.id)
