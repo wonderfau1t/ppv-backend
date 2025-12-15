@@ -2,13 +2,14 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Request, Response, UploadFile, status
 
-from api.dependencies import get_match_service, get_user_service
+from api.dependencies import get_match_service, get_user_service, require_role
 from core.schemas.user import (
     ChangePasswordRequest,
     MyProfileMatchesListResponse,
     MyProfileResponse,
     MyProfileStatsResponse,
     UpdateProfileRequest,
+    UpdateRoleRequest,
     UsersListResponse,
 )
 from core.services import MatchService, UserService
@@ -16,7 +17,6 @@ from core.services import MatchService, UserService
 router = APIRouter()
 
 
-# Список пользователей
 @router.get(
     "",
     response_model=UsersListResponse,
@@ -33,7 +33,6 @@ async def list(
     return users
 
 
-# Просмотр собственного профиля
 @router.get(
     "/me",
     response_model=MyProfileResponse,
@@ -46,7 +45,6 @@ async def get_my_profile(
     return user
 
 
-# Обновление информации в профиле
 @router.put("/me", summary="Обновление информации в профиле")
 async def update_my_profile(
     service: Annotated[UserService, Depends(get_user_service)],
@@ -111,6 +109,17 @@ async def get_my_matches(
 ) -> MyProfileMatchesListResponse:
     matches = await service.get_matches_by_user_id(request.state.user.user_id, limit, offset)
     return matches
+
+
+@router.patch("/{id}/role")
+async def update_user_role(
+    id: int,
+    data: UpdateRoleRequest,
+    service: Annotated[UserService, Depends(get_user_service)],
+    user=Depends(require_role("admin")),
+):
+    await service.update_role(id, data.code)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # Просмотреть профиль пользователя

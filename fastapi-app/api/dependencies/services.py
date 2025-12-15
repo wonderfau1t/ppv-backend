@@ -9,8 +9,11 @@ from core.services.resources_service import ResourcesService
 from .repositories import get_match_repository, get_role_repository, get_user_repository
 
 
-def get_user_service(repo: Annotated[UserRepository, Depends(get_user_repository)]) -> UserService:
-    return UserService(repo)
+def get_user_service(
+    user_repo: Annotated[UserRepository, Depends(get_user_repository)],
+    role_repo: Annotated[RoleRepository, Depends(get_role_repository)],
+) -> UserService:
+    return UserService(user_repo, role_repo)
 
 
 def get_auth_service(repo: Annotated[UserRepository, Depends(get_user_repository)]) -> AuthService:

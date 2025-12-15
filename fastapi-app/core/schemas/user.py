@@ -96,3 +96,17 @@ class MyProfileMatchesListResponse(BaseSchema):
     limit: int
     offset: int
     items: List[MyProfileMatchesListItemSchema]
+
+
+class UserProfile(BaseSchema):
+    id: int
+    first_name: str
+    middle_name: str
+    last_name: str
+    avatar: AvatarSchema
+    role: str
+    login: str
+
+
+class UpdateRoleRequest(BaseSchema):
+    code: str

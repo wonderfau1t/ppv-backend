@@ -116,3 +116,16 @@ class UserRepository:
         users = await self.session.scalars(stmt)
 
         return total, users.all()
+
+    async def update_role(self, user: UserAuth, role_id: int):
+        user.role_id = role_id
+
+        await self.session.commit()
+        await self.session.refresh(user)
+
+        return user
+
+    async def get_user_auth_by_id(self, id: int):
+        stmt = select(UserAuth).where(UserAuth.id == id)
+        user = await self.session.scalar(stmt)
+        return user
