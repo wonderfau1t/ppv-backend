@@ -1,0 +1,6 @@
+.venv
+.idea
+dataset_yolo/
+*.png
+*.jpg
+*.csv
