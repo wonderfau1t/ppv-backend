@@ -68,7 +68,7 @@ class UserService:
                         + user.user_data.stats.tournament_games_count,
                         wins_count=user.user_data.stats.wins_count,
                         role=RoleSchema(
-                            id=user.role_id,
+                            id=user.role.code,
                             name=user.role.name,
                         ),
                         status=StatusSchema(id=user.status.value, name=user.status.label),

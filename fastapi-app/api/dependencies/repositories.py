@@ -4,7 +4,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.models import db_helper
-from core.repositories import MatchRepository, UserRepository
+from core.repositories import MatchRepository, RoleRepository, UserRepository
 
 
 def get_user_repository(
@@ -17,3 +17,8 @@ def get_match_repository(
     session: Annotated[AsyncSession, Depends(db_helper.session_getter)],
 ) -> MatchRepository:
     return MatchRepository(session)
+
+def get_role_repository(
+        session: Annotated[AsyncSession, Depends(db_helper.session_getter)]
+):
+    return RoleRepository(session)

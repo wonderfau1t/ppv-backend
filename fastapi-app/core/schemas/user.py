@@ -32,7 +32,7 @@ class UsersListItem(BaseSchema):
 
 
 class RoleSchema(BaseSchema):
-    id: int
+    id: str
     name: str
 
 

@@ -32,12 +32,6 @@ class MatchesListResponse(BaseSchema):
     items: List[MatchListItemSchema]
 
 
-# class CreateMatchRequest(BaseSchema):
-#     player1_id: int
-#     player2_id: int
-#     best_of: int
-
-
 class MatchDetailsPlayerScheme(BaseSchema):
     id: int
     full_name: str

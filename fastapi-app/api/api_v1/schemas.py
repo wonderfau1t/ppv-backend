@@ -9,7 +9,9 @@ from core.services import SchemaService
 router = APIRouter()
 
 
-@router.get("/{schema_name}", response_model=TableSchema)
+@router.get(
+    "/{schema_name}", response_model=TableSchema, summary="Получить схему таблицы по ее имени"
+)
 async def get_schema_by_name(
     service: Annotated[SchemaService, Depends(get_schemas_service)],
     schema_name: Literal[

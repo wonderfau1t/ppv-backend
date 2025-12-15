@@ -6,7 +6,7 @@ from core.schemas.auth import BaseSchema
 class ColumnSchema(BaseSchema):
     key: str
     title: str
-    type: Literal["str", "number", "date", "player", "role", "status"]
+    type: Literal["str", "number", "date", "player", "roleSelect", "status"]
 
 
 class TableSchema(BaseSchema):

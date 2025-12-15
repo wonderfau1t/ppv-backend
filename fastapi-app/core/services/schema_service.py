@@ -36,7 +36,7 @@ class SchemaService:
                 ColumnSchema(key="player", title="ФИО Игрока", type="player"),
                 ColumnSchema(key="gamesCount", title="Количество сыгранных игр", type="number"),
                 ColumnSchema(key="winsCount", title="Количество побед", type="number"),
-                ColumnSchema(key="role", title="Роль", type="role"),
+                ColumnSchema(key="role", title="Роль", type="roleSelect"),
                 ColumnSchema(key="status", title="Статус", type="status"),
             ]
         )

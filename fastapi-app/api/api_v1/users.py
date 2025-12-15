@@ -47,7 +47,7 @@ async def get_my_profile(
 
 
 # Обновление информации в профиле
-@router.put("/me")
+@router.put("/me", summary="Обновление информации в профиле")
 async def update_my_profile(
     service: Annotated[UserService, Depends(get_user_service)],
     request: Request,
@@ -58,7 +58,7 @@ async def update_my_profile(
 
 
 # Установка фото профиля
-@router.post("/me/avatar")
+@router.post("/me/avatar", summary="Загрузка фото личного профиля")
 async def upload_avatar(
     service: Annotated[UserService, Depends(get_user_service)], request: Request, file: UploadFile
 ):
@@ -66,7 +66,7 @@ async def upload_avatar(
 
 
 # Удаление фото профиля
-@router.delete("/me/avatar")
+@router.delete("/me/avatar", summary="Удаление фото профиля")
 async def delete_avatar(
     service: Annotated[UserService, Depends(get_user_service)], request: Request
 ):
@@ -74,7 +74,7 @@ async def delete_avatar(
 
 
 # Смена пароля
-@router.patch("/me/password")
+@router.patch("/me/password", summary="Смена пароля")
 async def change_password(
     service: Annotated[UserService, Depends(get_user_service)],
     request: Request,
