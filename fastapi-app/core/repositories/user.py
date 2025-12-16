@@ -116,6 +116,7 @@ class UserRepository:
             .where(UserAuth.status != UserStatus.PENDING)
             .offset(offset)
             .limit(limit)
+            .order_by(UserAuth.id)
         )
         users = await self.session.scalars(stmt)
 
