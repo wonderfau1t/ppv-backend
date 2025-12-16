@@ -138,3 +138,31 @@ async def update_user_role(
 ) -> Response:
     await service.update_role(id, data.code)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.patch(
+    "{id}/block",
+    summary="Заблокировать / отклонить пользователя",
+    tags=["Админ"],
+)
+async def block_user(
+    service: Annotated[UserService, Depends(get_user_service)],
+    id: int,
+    user=Depends(require_role("admin")),
+):
+    await service.block_user(id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.patch(
+    "{id}/unblock",
+    summary="Разблокировать / подтвердить пользователя",
+    tags=["Админ"],
+)
+async def unblock_user(
+    service: Annotated[UserService, Depends(get_user_service)],
+    id: int,
+    user=Depends(require_role("admin")),
+):
+    await service.unblock_user(id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

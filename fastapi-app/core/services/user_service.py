@@ -6,7 +6,7 @@ from fastapi import UploadFile
 from core import settings
 from core.exceptions.auth import InvalidCredentialsError
 from core.exceptions.crud import AlreadyExistsError, NotFoundError
-from core.models import UserAuth, UserData
+from core.models import UserAuth, UserData, UserStatus
 from core.repositories import RoleRepository, UserRepository
 from core.schemas.auth import RegisterSchema
 from core.schemas.user import (
@@ -198,3 +198,17 @@ class UserService:
             raise NotFoundError(f"Role {role_code} not found")
 
         await self.user_repo.update_role(user, role.id)
+
+    async def block_user(self, user_id: int):
+        user = await self.user_repo.get_user_auth_by_id(user_id)
+        if not user:
+            raise NotFoundError(f"User {user_id} not found")
+
+        await self.user_repo.update_status(user, UserStatus.BLOCKED)
+
+    async def unblock_user(self, user_id: int):
+        user = await self.user_repo.get_user_auth_by_id(user_id)
+        if not user:
+            raise NotFoundError(f"User {user_id} not found")
+
+        await self.user_repo.update_status(user, UserStatus.ACTIVE)
