@@ -110,3 +110,8 @@ class UserProfile(BaseSchema):
 
 class UpdateRoleRequest(BaseSchema):
     code: str
+
+
+class PendingUsersResponse(BaseSchema):
+    total: int
+    players: List[PlayerSchema]

@@ -15,6 +15,7 @@ from core.schemas.user import (
     ChangePasswordRequest,
     MyProfileResponse,
     MyProfileStatsResponse,
+    PendingUsersResponse,
     PlayerSchema,
     RoleSchema,
     StatusSchema,
@@ -212,3 +213,20 @@ class UserService:
             raise NotFoundError(f"User {user_id} not found")
 
         await self.user_repo.update_status(user, UserStatus.ACTIVE)
+
+    async def get_pending_users(self):
+        users = await self.user_repo.get_users_by_status(UserStatus.PENDING)
+        if not users:
+            raise NotFoundError("There are no users awaiting confirmation.")
+
+        return PendingUsersResponse(
+            total=len(users),
+            players=[
+                PlayerSchema(
+                    id=user.id,
+                    full_name=user.user_data.full_name,
+                    avatar=AvatarSchema(alter=user.user_data.initials, path=""),
+                )
+                for user in users
+            ],
+        )

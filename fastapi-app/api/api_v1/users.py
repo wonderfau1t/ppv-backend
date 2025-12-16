@@ -8,6 +8,7 @@ from core.schemas.user import (
     MyProfileMatchesListResponse,
     MyProfileResponse,
     MyProfileStatsResponse,
+    PendingUsersResponse,
     UpdateProfileRequest,
     UpdateRoleRequest,
     UsersListResponse,
@@ -166,3 +167,16 @@ async def unblock_user(
 ):
     await service.unblock_user(id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get(
+    "/pending",
+    summary="Список пользователей ожидающих подтверждения",
+    tags=["Админ"],
+)
+async def get_pending_users(
+    service: Annotated[UserService, Depends(get_user_service)],
+    user=Depends(require_role("admin")),
+) -> PendingUsersResponse:
+    users = await service.get_pending_users()
+    return users

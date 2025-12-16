@@ -142,3 +142,15 @@ class UserRepository:
         await self.session.refresh(user)
 
         return user
+
+    async def get_users_by_status(self, status: UserStatus) -> Sequence[UserAuth]:
+        stmt = (
+            select(UserAuth)
+            .options(
+                selectinload(UserAuth.user_data),
+            )
+            .where(UserAuth.status == status)
+        )
+        users = await self.session.scalars(stmt)
+
+        return users.all()
