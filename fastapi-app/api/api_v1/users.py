@@ -141,7 +141,7 @@ async def update_user_role(
 
 
 @router.patch(
-    "{id}/block",
+    "/{id}/block",
     summary="Заблокировать / отклонить пользователя",
     tags=["Админ"],
 )
@@ -155,7 +155,7 @@ async def block_user(
 
 
 @router.patch(
-    "{id}/unblock",
+    "/{id}/unblock",
     summary="Разблокировать / подтвердить пользователя",
     tags=["Админ"],
 )
