@@ -225,7 +225,7 @@ class UserService:
                 PlayerSchema(
                     id=user.id,
                     full_name=user.user_data.full_name,
-                    avatar=AvatarSchema(alter=user.user_data.initials, path=""),
+                    avatar=AvatarSchema(alter=user.user_data.initials, path=None),
                 )
                 for user in users
             ],
