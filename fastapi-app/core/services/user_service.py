@@ -20,6 +20,7 @@ from core.schemas.user import (
     RoleSchema,
     StatusSchema,
     UpdateProfileRequest,
+    UserProfileResponse,
     UsersListItem,
     UsersListResponse,
 )
@@ -229,4 +230,16 @@ class UserService:
                 )
                 for user in users
             ],
+        )
+
+    async def get_user_profile(self, user_id: int) -> UserProfileResponse:
+        user = await self.user_repo.get_user_with_stats(user_id)
+        if not user:
+            raise NotFoundError(f"User {user_id} not found")
+
+        return UserProfileResponse(
+            id=user.id,
+            full_name=user.full_name,
+            avatar=AvatarSchema(alter=user.initials, path=user.avatar_url),
+            stats=MyProfileStatsResponse.model_validate(user.stats),
         )

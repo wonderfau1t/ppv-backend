@@ -115,3 +115,9 @@ class UpdateRoleRequest(BaseSchema):
 class PendingUsersResponse(BaseSchema):
     total: int
     players: List[PlayerSchema]
+
+class UserProfileResponse(BaseSchema):
+    id: int
+    full_name: str
+    avatar: AvatarSchema
+    stats: MyProfileStatsResponse

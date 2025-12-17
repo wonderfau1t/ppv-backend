@@ -11,6 +11,7 @@ from core.schemas.user import (
     PendingUsersResponse,
     UpdateProfileRequest,
     UpdateRoleRequest,
+    UserProfileResponse,
     UsersListResponse,
 )
 from core.services import MatchService, UserService
@@ -180,3 +181,14 @@ async def get_pending_users(
 ) -> PendingUsersResponse:
     users = await service.get_pending_users()
     return users
+
+
+@router.get(
+    "/{id}",
+    summary="Получить профиль пользователя",
+)
+async def get_user(
+    service: Annotated[UserService, Depends(get_user_service)], id: int
+) -> UserProfileResponse:
+    stats = await service.get_user_profile(id)
+    return stats
