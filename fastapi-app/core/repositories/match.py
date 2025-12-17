@@ -4,7 +4,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
-from core.models import Match, MatchSet, UserStats
+from core.models import Match, MatchSet, UserData, UserStats
 
 
 class MatchRepository:
@@ -29,9 +29,7 @@ class MatchRepository:
     async def _recalculate_player_stats(self, user_id: int):
         # Получаем игрока и его матчи
         result = await self.session.execute(
-            select(Match).where(
-                (Match.player1_id == user_id) | (Match.player2_id == user_id)
-            )
+            select(Match).where((Match.player1_id == user_id) | (Match.player2_id == user_id))
         )
         matches = result.scalars().all()
 
@@ -43,9 +41,7 @@ class MatchRepository:
         wins = sum(1 for m in matches if m.winner_id == user_id)
         losses = amateur_games - wins
 
-        total_duration = sum(
-            m.duration_in_minutes for m in matches if m.duration_in_minutes
-        )
+        total_duration = sum(m.duration_in_minutes for m in matches if m.duration_in_minutes)
         avg_duration = total_duration // amateur_games if amateur_games else 0
 
         # Среднее время за очко (условное)
@@ -59,9 +55,7 @@ class MatchRepository:
             if s.winner_id is not None:
                 total_points += s.player1_score + s.player2_score
 
-        avg_time_per_point = (
-            (total_duration * 60) // total_points if total_points else 0
-        )
+        avg_time_per_point = (total_duration * 60) // total_points if total_points else 0
 
         # Обновление UserStats
         stats = UserStats(
@@ -79,9 +73,7 @@ class MatchRepository:
         await self.session.flush()
 
     async def list(self, limit: int, offset: int) -> tuple[int, Sequence[Match]]:
-        total_result = await self.session.execute(
-            select(func.count()).select_from(Match)
-        )
+        total_result = await self.session.execute(select(func.count()).select_from(Match))
         total = total_result.scalar_one()
 
         # stmt = select(Match).options(
@@ -139,3 +131,14 @@ class MatchRepository:
         matches = await self.session.scalars(stmt)
 
         return total, matches.all()
+
+    async def get_top_players(self) -> Sequence[UserData]:
+        stmt = (
+            select(UserData)
+            .join(UserData.stats)
+            .options(joinedload(UserData.stats))
+            .order_by(UserStats.amateur_games_count.desc())
+            .limit(3)
+        )
+        users = await self.session.scalars(stmt)
+        return users.all()

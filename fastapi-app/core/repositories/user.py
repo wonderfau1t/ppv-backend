@@ -156,6 +156,12 @@ class UserRepository:
         return users.all()
 
     async def get_user_with_stats(self, user_id: int):
-        stmt = select(UserData).where(UserData.id == user_id).options(joinedload(UserData.stats))
+        stmt = (
+            select(UserData)
+            .where(UserData.id == user_id)
+            .options(
+                joinedload(UserData.stats), joinedload(UserData.user_auth).joinedload(UserAuth.role)
+            )
+        )
         user = await self.session.scalar(stmt)
         return user

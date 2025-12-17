@@ -192,3 +192,19 @@ async def get_user(
 ) -> UserProfileResponse:
     stats = await service.get_user_profile(id)
     return stats
+
+
+@router.get(
+    "/{id}/matches",
+    summary="Просмотр списка матчей, в которых участвовал пользователь",
+    response_model=MyProfileMatchesListResponse,
+)
+async def get_user_matches(
+    service: Annotated[MatchService, Depends(get_match_service)],
+    request: Request,
+    id: int,
+    limit: int = Query(10, ge=1, le=20),
+    offset: int = Query(0, ge=0),
+) -> MyProfileMatchesListResponse:
+    matches = await service.get_matches_by_user_id(id, limit, offset)
+    return matches

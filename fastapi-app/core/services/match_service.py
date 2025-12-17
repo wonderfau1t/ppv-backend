@@ -7,6 +7,8 @@ from core.schemas.match import (
     MatchesListResponse,
     MatchListItemPlayerSchema,
     MatchListItemSchema,
+    TopPlayerItemSchema,
+    TopPlayersResponse,
 )
 from core.schemas.user import (
     MyProfileMatchesListItemSchema,
@@ -126,4 +128,25 @@ class MatchService:
             limit=limit,
             offset=offset,
             items=matches_dtos,
+        )
+
+    # async def get_load(self, date_from: date, date_to: date):
+    #     load = await self.repo.get_load(date_from, date_to)
+
+    async def get_top_players(self) -> TopPlayersResponse:
+        users = await self.repo.get_top_players()
+        if not users:
+            raise NotFoundError("Users not found")
+
+        return TopPlayersResponse(
+            players=[
+                TopPlayerItemSchema(
+                    id=user.id,
+                    full_name=user.full_name,
+                    avatar=AvatarSchema(alter=user.initials, path=user.avatar_url),
+                    total_matches_duration=user.stats.total_matches_duration,
+                    total_games_count=user.stats.amateur_games_count,
+                )
+                for user in users
+            ]
         )

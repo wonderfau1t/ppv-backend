@@ -240,6 +240,7 @@ class UserService:
         return UserProfileResponse(
             id=user.id,
             full_name=user.full_name,
+            role=user.user_auth.role.name,
             avatar=AvatarSchema(alter=user.initials, path=user.avatar_url),
             stats=MyProfileStatsResponse.model_validate(user.stats),
         )

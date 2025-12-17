@@ -119,5 +119,6 @@ class PendingUsersResponse(BaseSchema):
 class UserProfileResponse(BaseSchema):
     id: int
     full_name: str
+    role: str
     avatar: AvatarSchema
     stats: MyProfileStatsResponse
