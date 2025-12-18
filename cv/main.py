@@ -5,10 +5,10 @@ import cv2
 from gamecode.config import *
 from gamecode.utils import load_calibration
 from gamecode.object_tracker import ObjectTracker
-from gamecode.game_logic import PingPongGame
+from gamecode.game_logic import TableTennisLogic, TableGeometry
 from gamecode.visualization import Visualizer
 from gamecode.analytics import Analytics
-
+import time
 
 def main():
     # 1. Загрузка калибровки
@@ -24,6 +24,13 @@ def main():
 
     # 2. Инициализация компонентов
     print("\nИнициализация компонентов...")
+    table = TableGeometry(
+        left=0,
+        right=TABLE_WIDTH,
+        top=0,
+        bottom=TABLE_HEIGHT,
+        net=TABLE_HEIGHT / 2
+    )
 
     # Трекер объектов
     tracker = ObjectTracker(
@@ -32,7 +39,7 @@ def main():
     )
 
     # Логика игры
-    game = PingPongGame()
+    game = TableTennisLogic(table)
 
     # Визуализация
     visualizer = Visualizer(H, src_points)
@@ -68,12 +75,17 @@ def main():
             tracked_objects = tracker.detect_objects(frame)
 
             # Обработка логики игры
-            # if tracked_objects['balls']:
-            #     main_ball = tracked_objects['balls'][0] if tracked_objects['balls'] else None
-            #     game_state = game.update_game_state(
-            #         main_ball,
-            #         tracked_objects['racket_positions']
-            #     )
+            if tracked_objects["balls"]:
+                ball = tracked_objects["balls"][0]
+
+                game.update_ball(
+                    x=ball["pos_table"][0],
+                    y=ball["pos_table"][1],
+                    t=ball["timestamp"],
+                    speed=ball["speed"],
+                    speed_vec=ball["velocity"],
+                    rackets=tracked_objects["racket_positions"]
+                )
 
             # Получение информации об игре
             game_info = game.get_game_info()
@@ -102,8 +114,8 @@ def main():
             elif key == ord('r'):  # Reset
                 game.reset_game()
                 tracker.clear_history()
-            elif key == ord('s'):  # Save analytics
-                analytics.save_game_analytics(game.game_history, game_info)
+            # elif key == ord('s'):  # Save analytics
+            #     # analytics.save_game_analytics(game.game_history, game_info)
             elif key == ord('p'):  # Pause
                 cv2.waitKey(0)
 
@@ -116,9 +128,9 @@ def main():
         cv2.destroyAllWindows()
 
         # Сохранение аналитики при выходе
-        if game.game_history:
-            print("\n💾 Автосохранение аналитики...")
-            analytics.save_game_analytics(game.game_history, game.get_game_info())
+        # if game.game_history:
+        #     print("\n💾 Автосохранение аналитики...")
+        #     analytics.save_game_analytics(game.game_history, game.get_game_info())
 
         print("\n🎮 Система анализа завершила работу")
         print("=" * 60)

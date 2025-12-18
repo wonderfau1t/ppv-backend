@@ -22,6 +22,9 @@ class ObjectTracker:
         self.frame_count = 0
         self.last_detection_time = time.time()
 
+        self.last_pos_table = None
+        self.last_pos_time = None
+
     def detect_objects(self, frame):
         """
         Детекция объектов на кадре.
@@ -85,6 +88,11 @@ class ObjectTracker:
                 best_candidate = min(ball_candidates, key=dist)
             else:
                 best_candidate = ball_candidates[0]
+            pos_table = project_point(best_candidate['center'], self.homography_matrix)
+            velocity, speed = self._calculate_velocity(
+                project_point(best_candidate['center'], self.homography_matrix),
+                current_time
+            )
 
             ball_data = {
                 'id': 1,  # фиксированный ID мяча
@@ -93,7 +101,8 @@ class ObjectTracker:
                 'pos_table': project_point(best_candidate['center'], self.homography_matrix),
                 'conf': best_candidate['conf'],
                 'timestamp': best_candidate['timestamp'],
-                'speed': self._calculate_speed(best_candidate['center'], current_time)
+                'velocity': velocity,
+                'speed': speed
             }
             self.last_ball_data = ball_data
             self.ball_history.append(ball_data.copy())
@@ -114,15 +123,27 @@ class ObjectTracker:
             'timestamp': current_time
         }
 
-    def _calculate_speed(self, center, timestamp):
-        """Расчет скорости мяча по последним координатам"""
-        if not self.ball_history:
-            return 0.0
-        prev = self.ball_history[-1]
-        dt = timestamp - prev['timestamp']
+    def _calculate_velocity(self, pos_table, timestamp):
+        if self.last_pos_table is None:
+            self.last_pos_table = pos_table
+            self.last_pos_time = timestamp
+            return (0.0, 0.0), 0.0
+
+        dt = timestamp - self.last_pos_time
         if dt <= 0:
-            return 0.0
-        return calculate_distance(center, prev['pos_table']) / dt
+            return (0.0, 0.0), 0.0
+
+        dx = pos_table[0] - self.last_pos_table[0]
+        dy = pos_table[1] - self.last_pos_table[1]
+
+        vx = dx / dt
+        vy = dy / dt
+        speed = (vx ** 2 + vy ** 2) ** 0.5
+
+        self.last_pos_table = pos_table
+        self.last_pos_time = timestamp
+
+        return (vx, vy), speed
 
     def _process_racket(self, x1, y1, x2, y2, conf, frame_width):
         cx = (x1 + x2) // 2

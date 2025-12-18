@@ -13,11 +13,12 @@ def calculate_homography(src_points, dst_points):
     return cv2.findHomography(src_points, dst_points)
 
 
-def project_point(point, homography_matrix):
-    """Проецирование точки через гомографию"""
-    point_array = np.array([[[point[0], point[1]]]], dtype=np.float32)
-    projected = cv2.perspectiveTransform(point_array, homography_matrix)[0][0]
-    return (int(projected[0]), int(projected[1]))
+def project_point(point, H):
+    p = np.array([[point]], dtype=np.float32)
+    projected = cv2.perspectiveTransform(p, H)[0][0]
+
+    return int(projected[0]), int(projected[1])
+
 
 
 def calculate_distance(point1, point2):

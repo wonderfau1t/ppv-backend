@@ -110,8 +110,13 @@ class Visualizer:
         """Рисование мяча на виде сверху"""
         pos_x, pos_y = ball['pos_table']
 
-        cv2.circle(table_view, (pos_x, pos_y), 5, COLORS['ball'], -1)
-        cv2.circle(table_view, (pos_x, pos_y), 7, (255, 255, 255), 1)
+        pos_x = int(pos_x)
+        pos_y = int(pos_y)
+
+        # защита от выхода за границы
+        if 0 <= pos_x < TABLE_WIDTH and 0 <= pos_y < TABLE_HEIGHT:
+            cv2.circle(table_view, (pos_x, pos_y), 5, COLORS['ball'], -1)
+            cv2.circle(table_view, (pos_x, pos_y), 7, (255, 255, 255), 1)
 
     def _draw_trajectory(self, table_view, ball_history):
         """Рисование траектории мяча"""
@@ -135,50 +140,62 @@ class Visualizer:
                     cv2.line(table_view, trajectory[i - 1], trajectory[i], color, 2)
 
     def _draw_game_info(self, frame, game_info):
-        """Рисование игровой информации на основном кадре"""
         h, w = frame.shape[:2]
 
-        # Счет (правый верхний угол)
-        score_text = f"Score: {game_info['score'][0]} - {game_info['score'][1]}"
-        cv2.putText(frame, score_text, (w - 300, 40),
+        points = game_info['points']
+        games = game_info['games']
+        state = game_info['state']
+
+        # --- СЧЁТ ПО ОЧКАМ ---
+        score_text = f"Points: {points['A']} - {points['B']}"
+        cv2.putText(frame, score_text, (w - 320, 40),
                     cv2.FONT_HERSHEY_SIMPLEX, 1.2, COLORS['score'], 3)
 
-        # Состояние игры
-        state_text = f"State: {game_info['game_state']}"
-        cv2.putText(frame, state_text, (w - 300, 80),
+        # --- СЧЁТ ПО ПАРТИЯМ ---
+        games_text = f"Games: {games['A']} - {games['B']}"
+        cv2.putText(frame, games_text, (w - 320, 80),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, COLORS['text'], 2)
+
+        # --- СОСТОЯНИЕ ---
+        state_text = f"State: {state}"
+        cv2.putText(frame, state_text, (w - 320, 120),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, COLORS['text'], 2)
 
-        # Подающий
-        server_text = f"Server: Player {game_info['server'] + 1}"
-        cv2.putText(frame, server_text, (w - 300, 110),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, COLORS['text'], 2)
-
-        # Количество ударов в розыгрыше
-        if game_info['game_state'] == "RALLY":
-            rally_text = f"Rally: {game_info['rally_count']}"
-            cv2.putText(frame, rally_text, (w - 300, 140),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, COLORS['text'], 2)
-
-        # Скорость (левый верхний угол)
-        speed_text = f"Speed: {game_info['avg_speed']:.1f} px/sec"
-        cv2.putText(frame, speed_text, (10, 40),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, COLORS['text'], 2)
-
-        # Общее количество очков
-        points_text = f"Points: {game_info['total_points']}"
-        cv2.putText(frame, points_text, (10, 70),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, COLORS['text'], 2)
+        # --- ПОБЕДИТЕЛЬ МАТЧА ---
+        if game_info['match_winner'] is not None:
+            winner = game_info['match_winner']
+            win_text = f"🏆 Winner: Player {1 if winner == 'A' else 2}"
+            cv2.putText(frame, win_text, (w // 2 - 200, h // 2),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1.4, (0, 255, 255), 4)
 
     def _draw_table_info(self, table_view, game_info):
-        """Рисование информации на виде сверху"""
-        # Счет игроков
-        cv2.putText(table_view, f"P1: {game_info['score'][0]}",
-                    (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, COLORS['player1'], 2)
-        cv2.putText(table_view, f"P2: {game_info['score'][1]}",
-                    (TABLE_WIDTH - 150, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, COLORS['player2'], 2)
+        points = game_info['points']
+        games = game_info['games']
+        state = game_info['state']
 
-        # Розыгрыш
-        if game_info['game_state'] == "RALLY":
-            cv2.putText(table_view, f"Rally: {game_info['rally_count']}",
-                        (TABLE_WIDTH // 2 - 60, 50),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, COLORS['score'], 2)
+        # Игрок A (левая сторона)
+        cv2.putText(table_view,
+                    f"P1  {points['A']} ({games['A']})",
+                    (40, 50),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1,
+                    COLORS['player1'],
+                    2)
+
+        # Игрок B (правая сторона)
+        cv2.putText(table_view,
+                    f"P2  {points['B']} ({games['B']})",
+                    (TABLE_WIDTH - 220, 50),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1,
+                    COLORS['player2'],
+                    2)
+
+        # Статус
+        cv2.putText(table_view,
+                    f"{state}",
+                    (TABLE_WIDTH // 2 - 80, 50),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.9,
+                    COLORS['score'],
+                    2)
