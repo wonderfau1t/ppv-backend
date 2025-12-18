@@ -18,3 +18,9 @@ class RoleRepository:
         roles = await self.session.scalars(stmt)
 
         return roles.all()
+
+    async def get_by_code(self, role_code: str):
+        stmt = select(Role).where(Role.code == role_code)
+        role = await self.session.scalar(stmt)
+
+        return role

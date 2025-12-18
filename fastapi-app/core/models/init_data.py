@@ -1,3 +1,4 @@
+from datetime import datetime, time, timedelta
 import random
 
 from faker import Faker
@@ -62,6 +63,9 @@ async def create_demo_data(session: AsyncSession):
 
     print("Создание случайных матчей...")
 
+    start_of_year = datetime(datetime.now().year, 1, 1)
+    end_of_year = datetime.now()
+
     for _ in range(150):
         p1, p2 = random.sample(users, 2)
 
@@ -91,11 +95,23 @@ async def create_demo_data(session: AsyncSession):
         winner = p1 if p1_total > p2_total else p2
         duration = random.randint(10, 40)
 
+        delta_days = (end_of_year - start_of_year).days
+        random_day = start_of_year + timedelta(days=random.randint(0, delta_days))
+
+        random_hour = random.randint(8, 19)
+        random_minute = random.randint(0, 59)
+        random_second = random.randint(0, 59)
+        random_datetime = datetime.combine(
+            random_day.date(),
+            time(hour=random_hour, minute=random_minute, second=random_second)
+        )
+
         match = Match(
             player1_id=p1,
             player2_id=p2,
             player1_score=p1_total,
             player2_score=p2_total,
+            datetime=random_datetime,
             winner_id=winner,
             duration_in_minutes=duration,
             sets=sets,

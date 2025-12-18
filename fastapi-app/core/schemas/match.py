@@ -47,3 +47,20 @@ class MatchDetailsResponse(BaseSchema):
     duration_in_minutes: int
     player1: MatchDetailsPlayerScheme
     player2: MatchDetailsPlayerScheme
+
+
+class TopPlayerItemSchema(BaseSchema):
+    id: int
+    full_name: str
+    avatar: AvatarSchema
+    total_matches_duration: int
+    total_games_count: int
+
+
+class TopPlayersResponse(BaseSchema):
+    players: List[TopPlayerItemSchema]
+
+
+class LoadPeriodResponse(BaseSchema):
+    labels: List[str]
+    data: List[int]

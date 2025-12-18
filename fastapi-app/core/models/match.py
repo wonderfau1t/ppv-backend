@@ -14,7 +14,7 @@ class Match(Base):
     __tablename__ = "matches"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    date: Mapped[dt.datetime] = mapped_column(default=dt.datetime.now)
+    datetime: Mapped[dt.datetime] = mapped_column(default=dt.datetime.now)
     type: Mapped[str] = mapped_column(default="Любительский")
     duration_in_minutes: Mapped[Optional[int]]
     player1_id: Mapped[int] = mapped_column(ForeignKey("users_data.id"))

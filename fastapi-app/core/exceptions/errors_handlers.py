@@ -9,7 +9,7 @@ from .crud import *
 def register_errors_handlers(app: FastAPI) -> None:
     # Ошибки валидации
     @app.exception_handler(ValidationError)
-    def handle_pydantic_errors(request: Request, exc: ValidationError):
+    def handle_pydantic_errors(request: Request, exc: ValidationError) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             content={"message": "Validation error", "errors": exc.errors()},
@@ -17,7 +17,7 @@ def register_errors_handlers(app: FastAPI) -> None:
 
     # Внутренние ошибки приложения
     @app.exception_handler(AppError)
-    def handle_app_error(request: Request, exc: AppError):
+    def handle_app_error(request: Request, exc: AppError) -> JSONResponse:
         match exc:
             case UnauthorizedError():
                 _status = status.HTTP_401_UNAUTHORIZED

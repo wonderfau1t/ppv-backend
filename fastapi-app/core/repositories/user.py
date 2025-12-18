@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
 from core.models import UserAuth, UserData, UserStats
+from core.models.user import UserStatus
 
 
 class UserRepository:
@@ -101,7 +102,9 @@ class UserRepository:
         pass
 
     async def get_list_with_data(self, limit: int, offset: int) -> tuple[int, Sequence[UserAuth]]:
-        total_result = await self.session.execute(select(func.count()).select_from(UserAuth))
+        total_result = await self.session.execute(
+            select(func.count()).select_from(UserAuth).where(UserAuth.status != UserStatus.PENDING)
+        )
         total = total_result.scalar_one()
 
         stmt = (
@@ -110,9 +113,55 @@ class UserRepository:
                 joinedload(UserAuth.role),
                 selectinload(UserAuth.user_data).selectinload(UserData.stats),
             )
+            .where(UserAuth.status != UserStatus.PENDING)
             .offset(offset)
             .limit(limit)
+            .order_by(UserAuth.id)
         )
         users = await self.session.scalars(stmt)
 
         return total, users.all()
+
+    async def update_role(self, user: UserAuth, role_id: int):
+        user.role_id = role_id
+
+        await self.session.commit()
+        await self.session.refresh(user)
+
+        return user
+
+    async def get_user_auth_by_id(self, id: int):
+        stmt = select(UserAuth).where(UserAuth.id == id)
+        user = await self.session.scalar(stmt)
+        return user
+
+    async def update_status(self, user: UserAuth, status: UserStatus):
+        user.status = status
+
+        await self.session.commit()
+        await self.session.refresh(user)
+
+        return user
+
+    async def get_users_by_status(self, status: UserStatus) -> Sequence[UserAuth]:
+        stmt = (
+            select(UserAuth)
+            .options(
+                selectinload(UserAuth.user_data),
+            )
+            .where(UserAuth.status == status)
+        )
+        users = await self.session.scalars(stmt)
+
+        return users.all()
+
+    async def get_user_with_stats(self, user_id: int):
+        stmt = (
+            select(UserData)
+            .where(UserData.id == user_id)
+            .options(
+                joinedload(UserData.stats), joinedload(UserData.user_auth).joinedload(UserAuth.role)
+            )
+        )
+        user = await self.session.scalar(stmt)
+        return user
