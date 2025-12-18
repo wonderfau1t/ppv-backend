@@ -1,7 +1,11 @@
+from collections import defaultdict
+from typing import Literal
+
 from core.exceptions.crud import NotFoundError
 from core.repositories import MatchRepository
 from core.schemas.match import (
     AvatarSchema,
+    LoadPeriodResponse,
     MatchDetailsPlayerScheme,
     MatchDetailsResponse,
     MatchesListResponse,
@@ -15,6 +19,24 @@ from core.schemas.user import (
     MyProfileMatchesListResponse,
     MyProfilePlayerSchema,
 )
+from core.utils.date import get_current_day, get_current_month, get_current_week, get_current_year
+
+MONTHS_RU = [
+    "Январь",
+    "Февраль",
+    "Март",
+    "Апрель",
+    "Май",
+    "Июнь",
+    "Июль",
+    "Август",
+    "Сентябрь",
+    "Октябрь",
+    "Ноябрь",
+    "Декабрь",
+]
+
+DAYS_RU = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
 
 
 class MatchService:
@@ -30,7 +52,7 @@ class MatchService:
             "items": [
                 MatchListItemSchema(
                     id=match.id,
-                    date=match.date.date(),
+                    date=match.datetime.date(),
                     player1=MatchListItemPlayerSchema(
                         id=match.player1.id,
                         full_name=match.player1.full_name,
@@ -68,7 +90,7 @@ class MatchService:
 
         match_schema = MatchDetailsResponse(
             type=match.type,
-            datetime=match.date,
+            datetime=match.datetime,
             duration_in_minutes=match.duration_in_minutes or 0,
             player1=MatchDetailsPlayerScheme(
                 id=match.player1_id,
@@ -115,7 +137,7 @@ class MatchService:
 
             match_dto = MyProfileMatchesListItemSchema(
                 id=match.id,
-                date=match.date.date(),
+                date=match.datetime.date(),
                 opponent=opponent,
                 score=f"{match.player1_score}:{match.player2_score}",
                 winner=winner,
@@ -129,9 +151,6 @@ class MatchService:
             offset=offset,
             items=matches_dtos,
         )
-
-    # async def get_load(self, date_from: date, date_to: date):
-    #     load = await self.repo.get_load(date_from, date_to)
 
     async def get_top_players(self) -> TopPlayersResponse:
         users = await self.repo.get_top_players()
@@ -150,3 +169,45 @@ class MatchService:
                 for user in users
             ]
         )
+
+    async def get_load_by_period(self, period: Literal["day", "week", "month", "year"]) -> LoadPeriodResponse:
+        match period:
+            case "day":
+                date_from, date_to = get_current_day()
+            case "week":
+                date_from, date_to = get_current_week()
+            case "month":
+                date_from, date_to = get_current_month()
+            case "year":
+                date_from, date_to = get_current_year()
+
+        games = await self.repo.get_load_by_period(date_from, date_to)
+
+        counts = defaultdict(int)
+
+        if period == "year":
+            labels = MONTHS_RU
+            for game in games:
+                counts[MONTHS_RU[game.datetime.month - 1]] += 1
+        elif period == "month":
+            labels = [f"Неделя {i}" for i in range(1, 6)]
+            for game in games:
+                week_num = ((game.datetime.day - 1) // 7) + 1
+                counts[f"Неделя {week_num}"] += 1
+        elif period == "week":
+            labels = DAYS_RU
+            for game in games:
+                day_idx = game.datetime.weekday()
+                counts[DAYS_RU[day_idx]] += 1
+        elif period == "day":
+            labels = [f"{h}:00-{h + 2}:00" for h in range(8, 20, 2)]
+            for game in games:
+                hour = game.datetime.hour
+                if 8 <= hour < 20:
+                    start_hour = 8 + 2 * ((hour - 8) // 2)
+                    interval_label = f"{start_hour}:00-{start_hour + 2}:00"
+                    counts[interval_label] += 1
+
+        data = [counts.get(label, 0) for label in labels]
+
+        return LoadPeriodResponse(labels=labels, data=data)

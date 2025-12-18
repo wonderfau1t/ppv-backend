@@ -1,12 +1,15 @@
-from datetime import date
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Query
 
 from api.dependencies.services import get_match_service
-from core.schemas.match import MatchDetailsResponse, MatchesListResponse, TopPlayersResponse
+from core.schemas.match import (
+    LoadPeriodResponse,
+    MatchDetailsResponse,
+    MatchesListResponse,
+    TopPlayersResponse,
+)
 from core.services.match_service import MatchService
-from core.utils.date import get_current_week
 
 router = APIRouter()
 
@@ -43,3 +46,12 @@ async def get_by_id(
 ) -> MatchDetailsResponse:
     match = await service.get_by_id(id)
     return match
+
+
+@router.get("/load/{period}")
+async def get_load_by_period(
+    service: Annotated[MatchService, Depends(get_match_service)],
+    period: Literal["day", "week", "month", "year"],
+) -> LoadPeriodResponse:
+    load = await service.get_load_by_period(period)
+    return load

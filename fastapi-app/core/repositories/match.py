@@ -1,3 +1,5 @@
+import datetime
+from datetime import date
 from typing import Sequence
 
 from sqlalchemy import func, or_, select
@@ -89,7 +91,7 @@ class MatchRepository:
                 joinedload(Match.player2),
                 joinedload(Match.winner),
             )
-            .order_by(Match.date.desc())
+            .order_by(Match.datetime.desc())
             .offset(offset)
             .limit(limit)
         )
@@ -124,7 +126,7 @@ class MatchRepository:
             select(Match)
             .where(or_(Match.player1_id == id, Match.player2_id == id))
             .options(selectinload(Match.player1), selectinload(Match.player2))
-            .order_by(Match.date.desc())
+            .order_by(Match.datetime.desc())
             .offset(offset)
             .limit(limit)
         )
@@ -142,3 +144,16 @@ class MatchRepository:
         )
         users = await self.session.scalars(stmt)
         return users.all()
+
+    async def get_load_by_period(
+        self,
+        date_from: datetime.datetime,
+        date_to: datetime.datetime,
+    ):
+        stmt = select(Match).where(
+            Match.datetime >= date_from,
+            Match.datetime < date_to,
+        )
+
+        result = await self.session.scalars(stmt)
+        return result.all()

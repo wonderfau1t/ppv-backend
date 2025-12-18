@@ -49,11 +49,6 @@ class MatchDetailsResponse(BaseSchema):
     player2: MatchDetailsPlayerScheme
 
 
-class LoadResponse(BaseSchema):
-    labels: List[str]
-    data: List[int]
-
-
 class TopPlayerItemSchema(BaseSchema):
     id: int
     full_name: str
@@ -64,3 +59,8 @@ class TopPlayerItemSchema(BaseSchema):
 
 class TopPlayersResponse(BaseSchema):
     players: List[TopPlayerItemSchema]
+
+
+class LoadPeriodResponse(BaseSchema):
+    labels: List[str]
+    data: List[int]
