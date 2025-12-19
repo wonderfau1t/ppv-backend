@@ -79,8 +79,18 @@ class SchemaService:
             ]
         )
 
+        top_players = TableSchema(
+            columns=[
+                ColumnSchema(key="place", title="Место", type="number"),
+                ColumnSchema(key="player", title="Игрок", type="player"),
+                ColumnSchema(key="totalMatchesDuration", title="Общее игровое время", type="number"),
+                ColumnSchema(key="totalGamesCount", title="Общее количество матчей", type="number"),
+            ]
+        )
+
         self.register("users", users)
         self.register("admin-users", admin_users)
         self.register("matches-history", matches_history)
         self.register("user-matches-history", user_matches_history)
         self.register("match-with-sets", match_with_sets)
+        self.register("top-players", top_players)

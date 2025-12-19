@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Literal
+from typing import List, Literal
 
 from core.exceptions.crud import NotFoundError
 from core.repositories import MatchRepository
@@ -18,6 +18,7 @@ from core.schemas.user import (
     MyProfileMatchesListItemSchema,
     MyProfileMatchesListResponse,
     MyProfilePlayerSchema,
+    PlayerSchema,
 )
 from core.utils.date import get_current_day, get_current_month, get_current_week, get_current_year
 
@@ -157,20 +158,29 @@ class MatchService:
         if not users:
             raise NotFoundError("Users not found")
 
-        return TopPlayersResponse(
-            players=[
+        place = 1
+        result: List[TopPlayerItemSchema] = []
+
+        for user in users:
+            result.append(
                 TopPlayerItemSchema(
-                    id=user.id,
-                    full_name=user.full_name,
-                    avatar=AvatarSchema(alter=user.initials, path=user.avatar_url),
+                    place=place,
+                    player=MatchListItemPlayerSchema(
+                        id=user.id,
+                        full_name=user.full_name,
+                        avatar=AvatarSchema(alter=user.initials, path=user.avatar_url),
+                    ),
                     total_matches_duration=user.stats.total_matches_duration,
                     total_games_count=user.stats.amateur_games_count,
                 )
-                for user in users
-            ]
-        )
+            )
+            place += 1
 
-    async def get_load_by_period(self, period: Literal["day", "week", "month", "year"]) -> LoadPeriodResponse:
+        return TopPlayersResponse(items=result)
+
+    async def get_load_by_period(
+        self, period: Literal["day", "week", "month", "year"]
+    ) -> LoadPeriodResponse:
         match period:
             case "day":
                 date_from, date_to = get_current_day()

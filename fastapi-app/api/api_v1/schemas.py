@@ -15,7 +15,7 @@ router = APIRouter()
 async def get_schema_by_name(
     service: Annotated[SchemaService, Depends(get_schemas_service)],
     schema_name: Literal[
-        "users", "admin-users", "matches-history", "user-matches-history", "match-with-sets"
+        "users", "admin-users", "matches-history", "user-matches-history", "match-with-sets", "top-players"
     ],
 ) -> TableSchema:
     schema = service.get(schema_name)

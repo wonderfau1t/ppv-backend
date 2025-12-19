@@ -1,6 +1,7 @@
 from datetime import date, datetime
 from typing import List
 
+
 from .base import BaseSchema
 
 
@@ -50,15 +51,14 @@ class MatchDetailsResponse(BaseSchema):
 
 
 class TopPlayerItemSchema(BaseSchema):
-    id: int
-    full_name: str
-    avatar: AvatarSchema
+    place: int
+    player: MatchListItemPlayerSchema
     total_matches_duration: int
     total_games_count: int
 
 
 class TopPlayersResponse(BaseSchema):
-    players: List[TopPlayerItemSchema]
+    items: List[TopPlayerItemSchema]
 
 
 class LoadPeriodResponse(BaseSchema):
