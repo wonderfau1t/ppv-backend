@@ -2,6 +2,7 @@ from collections import defaultdict
 from typing import List, Literal
 
 from core.exceptions.crud import NotFoundError
+from core.models import Match
 from core.repositories import MatchRepository
 from core.schemas.match import (
     AvatarSchema,
@@ -11,6 +12,7 @@ from core.schemas.match import (
     MatchesListResponse,
     MatchListItemPlayerSchema,
     MatchListItemSchema,
+    TopDaysAndPeriodResponse,
     TopPlayerItemSchema,
     TopPlayersResponse,
 )
@@ -18,7 +20,6 @@ from core.schemas.user import (
     MyProfileMatchesListItemSchema,
     MyProfileMatchesListResponse,
     MyProfilePlayerSchema,
-    PlayerSchema,
 )
 from core.utils.date import get_current_day, get_current_month, get_current_week, get_current_year
 
@@ -38,6 +39,7 @@ MONTHS_RU = [
 ]
 
 DAYS_RU = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
+TIME_INTERVALS = [f"{h}:00-{h + 2}:00" for h in range(8, 20, 2)]
 
 
 class MatchService:
@@ -210,7 +212,7 @@ class MatchService:
                 day_idx = game.datetime.weekday()
                 counts[DAYS_RU[day_idx]] += 1
         elif period == "day":
-            labels = [f"{h}:00-{h + 2}:00" for h in range(8, 20, 2)]
+            labels = TIME_INTERVALS
             for game in games:
                 hour = game.datetime.hour
                 if 8 <= hour < 20:
@@ -221,3 +223,36 @@ class MatchService:
         data = [counts.get(label, 0) for label in labels]
 
         return LoadPeriodResponse(labels=labels, data=data)
+
+    async def calculate_extra_stats(self) -> TopDaysAndPeriodResponse:
+        date_from, date_to = get_current_week()
+        matches = await self.repo.get_load_by_period(date_from, date_to)
+
+        day_counts = defaultdict(int)
+        time_interval_counts = defaultdict(int)
+
+        for match in matches:
+            dt = match.datetime
+
+            day_name = DAYS_RU[dt.weekday()]
+            day_counts[day_name] += 1
+
+            hour = dt.hour
+            if 8 <= hour < 20:
+                start_hour = 8 + 2 * ((hour - 8) // 2)
+                interval = f"{start_hour}:00-{start_hour + 2}:00"
+                time_interval_counts[interval] += 1
+
+        top_days = sorted(day_counts.items(), key=lambda x: x[1], reverse=True)[:2]
+
+        top_days_result = [day for day, _ in top_days]
+
+        top_period = None
+        if time_interval_counts:
+            interval, _ = max(time_interval_counts.items(), key=lambda x: x[1])
+            top_period = interval
+
+        return TopDaysAndPeriodResponse(
+            top_days=top_days_result,
+            top_period=top_period if top_period is not None else ""
+        )

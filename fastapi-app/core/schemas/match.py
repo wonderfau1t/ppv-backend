@@ -64,3 +64,7 @@ class TopPlayersResponse(BaseSchema):
 class LoadPeriodResponse(BaseSchema):
     labels: List[str]
     data: List[int]
+
+class TopDaysAndPeriodResponse(BaseSchema):
+    top_days: List[str]
+    top_period: str

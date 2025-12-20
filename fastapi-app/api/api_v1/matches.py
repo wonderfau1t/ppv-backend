@@ -7,6 +7,7 @@ from core.schemas.match import (
     LoadPeriodResponse,
     MatchDetailsResponse,
     MatchesListResponse,
+    TopDaysAndPeriodResponse,
     TopPlayersResponse,
 )
 from core.services.match_service import MatchService
@@ -46,6 +47,14 @@ async def get_by_id(
 ) -> MatchDetailsResponse:
     match = await service.get_by_id(id)
     return match
+
+
+@router.get("/load/extra-stats")
+async def get_top_load(
+    service: Annotated[MatchService, Depends(get_match_service)],
+) -> TopDaysAndPeriodResponse:
+    stats = await service.calculate_extra_stats()
+    return stats
 
 
 @router.get("/load/{period}")
