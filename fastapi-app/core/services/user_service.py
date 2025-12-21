@@ -6,7 +6,7 @@ from fastapi import UploadFile
 from core import settings
 from core.exceptions.auth import InvalidCredentialsError
 from core.exceptions.crud import AlreadyExistsError, NotFoundError
-from core.models import UserAuth, UserData, UserStatus
+from core.models import UserAuth, UserData, UserStats, UserStatus
 from core.repositories import RoleRepository, UserRepository
 from core.schemas.auth import RegisterSchema
 from core.schemas.user import (
@@ -43,6 +43,7 @@ class UserService:
             middle_name=data.middle_name,
             last_name=data.last_name,
             user_auth=user_auth,
+            stats=UserStats(),
         )
         user_id = await self.user_repo.create(user_data)
 
