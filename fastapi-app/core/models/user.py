@@ -32,7 +32,7 @@ class UserAuth(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     login: Mapped[str] = mapped_column(unique=True)
     password_hash: Mapped[str]
-    role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"))
+    role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"), default=2)
     status: Mapped[UserStatus] = mapped_column(
         SQLEnum(UserStatus, name="user_status"), default=UserStatus.PENDING
     )
