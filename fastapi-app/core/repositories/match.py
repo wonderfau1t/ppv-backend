@@ -13,6 +13,9 @@ class MatchRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
+    async def commit(self):
+        await self.session.commit()
+
     async def create(self, match_data: Match) -> int:
         self.session.add(match_data)
         await self.session.commit()

@@ -69,3 +69,11 @@ async def start_session(
 async def complete_session(
     service: Annotated[MatchService, Depends(get_match_service)],
 ): ...
+
+
+@router.post("/update/{player}")
+async def update(
+    service: Annotated[MatchService, Depends(get_match_service)],
+    player: int,
+): 
+    await service.update(player)

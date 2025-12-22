@@ -37,8 +37,8 @@ class Match(Base):
     duration_in_minutes: Mapped[Optional[int]]
     player1_id: Mapped[int] = mapped_column(ForeignKey("users_data.id"))
     player2_id: Mapped[int] = mapped_column(ForeignKey("users_data.id"))
-    player1_score: Mapped[Optional[int]]
-    player2_score: Mapped[Optional[int]]
+    player1_score: Mapped[int] = mapped_column(default=0)
+    player2_score: Mapped[int] = mapped_column(default=0)
     status: Mapped[MatchStatus] = mapped_column(
         SQLEnum(MatchStatus, name="match_status"), default=MatchStatus.REGISTERED
     )

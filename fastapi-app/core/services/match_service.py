@@ -3,13 +3,13 @@ from typing import List, Literal
 
 from core.exceptions.crud import NotFoundError
 from core.models import Match, MatchSet
+from core.models.match import MatchStatus
 from core.repositories import MatchRepository
 from core.schemas.match import (
     LoadPeriodResponse,
     MatchDetailsPlayerScheme,
     MatchDetailsResponse,
     MatchesListResponse,
-    MatchListItemPlayerSchema,
     MatchListItemSchema,
     TopDaysAndPeriodResponse,
     TopPlayerItemSchema,
@@ -20,7 +20,6 @@ from core.schemas.shared import AvatarSchema, PlayerSchema
 from core.schemas.user import (
     MyProfileMatchesListItemSchema,
     MyProfileMatchesListResponse,
-    MyProfilePlayerSchema,
 )
 from core.utils.date import get_current_day, get_current_month, get_current_week, get_current_year
 
@@ -57,14 +56,14 @@ class MatchService:
                 MatchListItemSchema(
                     id=match.id,
                     date=match.datetime.date(),
-                    player1=MatchListItemPlayerSchema(
+                    player1=PlayerSchema(
                         id=match.player1.id,
                         full_name=match.player1.full_name,
                         avatar=AvatarSchema(
                             alter=match.player1.initials, path=match.player1.avatar_url
                         ),
                     ),
-                    player2=MatchListItemPlayerSchema(
+                    player2=PlayerSchema(
                         id=match.player2.id,
                         full_name=match.player2.full_name,
                         avatar=AvatarSchema(
@@ -72,7 +71,7 @@ class MatchService:
                         ),
                     ),
                     score=f"{match.player1_score}:{match.player2_score}",
-                    winner=MatchListItemPlayerSchema(
+                    winner=PlayerSchema(
                         id=match.winner.id,
                         full_name=match.winner.full_name,
                         avatar=AvatarSchema(
@@ -125,12 +124,12 @@ class MatchService:
 
         matches_dtos = []
         for match in matches:
-            p1 = MyProfilePlayerSchema(
+            p1 = PlayerSchema(
                 id=match.player1_id,
                 full_name=match.player1.full_name,
                 avatar=AvatarSchema(alter=match.player1.initials, path=match.player1.avatar_url),
             )
-            p2 = MyProfilePlayerSchema(
+            p2 = PlayerSchema(
                 id=match.player2_id,
                 full_name=match.player2.full_name,
                 avatar=AvatarSchema(alter=match.player2.initials, path=match.player2.avatar_url),
@@ -168,7 +167,7 @@ class MatchService:
             result.append(
                 TopPlayerItemSchema(
                     place=place,
-                    player=MatchListItemPlayerSchema(
+                    player=PlayerSchema(
                         id=user.id,
                         full_name=user.full_name,
                         avatar=AvatarSchema(alter=user.initials, path=user.avatar_url),
@@ -305,14 +304,64 @@ class MatchService:
             player2_id=invited_id,
             player1_score=0,
             player2_score=0,
-            sets=[MatchSet(
-                set_number=i,
-                player2_score=0,
-                player1_score=0,
-            ) for i in range(1, best_of + 1)]
+            sets=[
+                MatchSet(
+                    set_number=i,
+                    player2_score=0,
+                    player1_score=0,
+                )
+                for i in range(1, best_of + 1)
+            ],
         )
         id = await self.repo.create_session(match)
         return id
 
     async def start_session(self):
         await self.repo.start_session()
+
+    async def update(self, player: int):
+        match = await self.repo.get_active_match()
+        if not match:
+            raise
+
+        last_set = await self.repo.get_last_set_of_match(match.id)
+        if not last_set:
+            raise
+
+        # 1. Начисляем очко
+        if player == 1:
+            last_set.player1_score += 1
+        elif player == 2:
+            last_set.player2_score += 1
+        else:
+            raise ValueError("Invalid player number")
+
+        p1 = last_set.player1_score
+        p2 = last_set.player2_score
+
+        set_winner = None
+        if (p1 >= 11 or p2 >= 11) and abs(p1 - p2) >= 2:
+            if p1 > p2:
+                set_winner = match.player1_id
+                match.player1_score += 1
+            else:
+                set_winner = match.player2_id
+                match.player2_score += 1
+
+            last_set.winner_id = set_winner
+
+            sets = match.sets
+
+            p1_sets = match.player1_score
+            p2_sets = match.player2_score
+
+            required_sets = (len(sets) // 2) + 1
+
+            if p1_sets >= required_sets:
+                match.winner_id = match.player1_id
+                match.status = MatchStatus.FINISHED
+            elif p2_sets >= required_sets:
+                match.winner_id = match.player2_id
+                match.status = MatchStatus.FINISHED
+
+        await self.repo.commit()

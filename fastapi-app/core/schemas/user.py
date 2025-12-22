@@ -1,8 +1,8 @@
 from datetime import date
 from typing import List
 
-from core.schemas.base import BaseSchema
-from core.schemas.match import AvatarSchema
+from .base import BaseSchema
+from .shared import AvatarSchema, PlayerSchema
 
 
 class UpdateProfileRequest(BaseSchema):
@@ -15,12 +15,6 @@ class UpdateProfileRequest(BaseSchema):
 class ChangePasswordRequest(BaseSchema):
     current_password: str
     new_password: str
-
-
-class PlayerSchema(BaseSchema):
-    id: int
-    full_name: str
-    avatar: AvatarSchema
 
 
 # ---- Список пользователей в системе ----
@@ -75,19 +69,12 @@ class MyProfileStatsResponse(BaseSchema):
     total_matches_duration: int
 
 
-# ---- Список матчей ----
-class MyProfilePlayerSchema(BaseSchema):
-    id: int
-    full_name: str
-    avatar: AvatarSchema
-
-
 class MyProfileMatchesListItemSchema(BaseSchema):
     id: int
     date: date
-    opponent: MyProfilePlayerSchema
+    opponent: PlayerSchema
     score: str
-    winner: MyProfilePlayerSchema
+    winner: PlayerSchema
     type: str
 
 
@@ -115,6 +102,7 @@ class UpdateRoleRequest(BaseSchema):
 class PendingUsersResponse(BaseSchema):
     total: int
     players: List[PlayerSchema]
+
 
 class UserProfileResponse(BaseSchema):
     id: int

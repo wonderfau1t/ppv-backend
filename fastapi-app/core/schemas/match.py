@@ -1,24 +1,17 @@
 from datetime import date, datetime
 from typing import List
-from .shared import AvatarSchema
-
 
 from .base import BaseSchema
-
-
-class MatchListItemPlayerSchema(BaseSchema):
-    id: int
-    full_name: str
-    avatar: AvatarSchema
+from .shared import AvatarSchema, PlayerSchema
 
 
 class MatchListItemSchema(BaseSchema):
     id: int
     date: date
-    player1: MatchListItemPlayerSchema
-    player2: MatchListItemPlayerSchema
+    player1: PlayerSchema
+    player2: PlayerSchema
     score: str
-    winner: MatchListItemPlayerSchema
+    winner: PlayerSchema
     type: str
 
 
@@ -48,7 +41,7 @@ class MatchDetailsResponse(BaseSchema):
 
 class TopPlayerItemSchema(BaseSchema):
     place: int
-    player: MatchListItemPlayerSchema
+    player: PlayerSchema
     total_matches_duration: int
     total_games_count: int
 
@@ -60,6 +53,7 @@ class TopPlayersResponse(BaseSchema):
 class LoadPeriodResponse(BaseSchema):
     labels: List[str]
     data: List[int]
+
 
 class TopDaysAndPeriodResponse(BaseSchema):
     top_days: List[str]
