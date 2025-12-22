@@ -2,7 +2,6 @@ from collections import defaultdict
 from typing import List, Literal
 
 from core.exceptions.crud import NotFoundError
-from core.models import Match
 from core.repositories import MatchRepository
 from core.schemas.match import (
     AvatarSchema,
@@ -16,6 +15,7 @@ from core.schemas.match import (
     TopPlayerItemSchema,
     TopPlayersResponse,
 )
+from core.schemas.session import GetSessionResponse, GetStatsResponse
 from core.schemas.user import (
     MyProfileMatchesListItemSchema,
     MyProfileMatchesListResponse,
@@ -253,6 +253,15 @@ class MatchService:
             top_period = interval
 
         return TopDaysAndPeriodResponse(
-            top_days=top_days_result,
-            top_period=top_period if top_period is not None else ""
+            top_days=top_days_result, top_period=top_period if top_period is not None else ""
         )
+
+    async def get_session(self) -> GetSessionResponse:
+        response = GetSessionResponse(
+            is_live=True, webRTC_url="http://147.45.159.99:8888/live/tennis/"
+        )
+        return response
+
+    async def get_session_stats(self) -> GetStatsResponse: ...
+
+    async def create_session(self): ...
