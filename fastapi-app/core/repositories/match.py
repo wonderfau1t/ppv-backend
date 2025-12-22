@@ -1,5 +1,4 @@
 import datetime
-from datetime import date
 from typing import Sequence
 
 from sqlalchemy import func, or_, select
@@ -7,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
 from core.models import Match, MatchSet, UserData, UserStats
+from core.models.match import MatchStatus
 
 
 class MatchRepository:
@@ -157,3 +157,39 @@ class MatchRepository:
 
         result = await self.session.scalars(stmt)
         return result.all()
+
+    async def get_last_set_of_match(self, match_id: int):
+        stmt = select(MatchSet).where(MatchSet.match_id == match_id).order_by(MatchSet.set_number)
+        sets = await self.session.scalars(stmt)
+        sets = sets.all()
+
+        for _set in sets:
+            if _set.winner_id is None:
+                return _set
+
+    async def get_active_match(self):
+        stmt = (
+            select(Match)
+            .where(Match.status == MatchStatus.IN_PROGRESS)
+            .options(
+                joinedload(Match.player1),
+                joinedload(Match.player2),
+                selectinload(Match.sets),
+            )
+        )
+        match = await self.session.scalar(stmt)
+        return match
+
+    async def create_session(self, match: Match):
+        self.session.add(match)
+        await self.session.commit()
+
+        return match.id
+
+    async def start_session(self):
+        stmt = select(Match).where(Match.status == MatchStatus.REGISTERED)
+        match = await self.session.scalar(stmt)
+        if not match:
+            raise
+        match.status = MatchStatus.IN_PROGRESS
+        await self.session.commit()

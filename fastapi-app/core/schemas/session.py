@@ -1,4 +1,5 @@
 from .base import BaseSchema
+from .shared import PlayerSchema
 
 
 class GetSessionResponse(BaseSchema):
@@ -11,17 +12,6 @@ class SetSchema(BaseSchema):
     score: str
 
 
-class AvatarSchema(BaseSchema):
-    alter: str
-    path: str | None
-
-
-class PlayerSchema(BaseSchema):
-    id: str
-    full_name: str
-    avatar: AvatarSchema
-
-
 class GetStatsResponse(BaseSchema):
     player1: PlayerSchema
     player2: PlayerSchema
@@ -31,3 +21,4 @@ class GetStatsResponse(BaseSchema):
 
 class CreateSession(BaseSchema):
     player_id: int
+    best_of: int

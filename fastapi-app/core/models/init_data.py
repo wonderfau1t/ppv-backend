@@ -5,6 +5,7 @@ from faker import Faker
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.models import Match, MatchSet, Role, UserAuth, UserData
+from core.models.match import MatchStatus
 from core.repositories import MatchRepository, RoleRepository, UserRepository
 from core.utils.bcrypt import hash_password
 
@@ -115,6 +116,7 @@ async def create_demo_data(session: AsyncSession):
             winner_id=winner,
             duration_in_minutes=duration,
             sets=sets,
+            status=MatchStatus.FINISHED,
         )
 
         await match_repo.create_with_stats(match)

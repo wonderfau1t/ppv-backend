@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request, Response, status
 
 from api.dependencies import get_match_service
 from core.schemas.session import CreateSession, GetSessionResponse, GetStatsResponse
@@ -25,36 +25,40 @@ async def get_sesion(
     "/stats",
     summary="Получить статистику по аткивной сессии",
     response_model=GetStatsResponse,
-    deprecated=True,
+    # deprecated=True,
 )
 async def get_stats(
     service: Annotated[MatchService, Depends(get_match_service)],
 ) -> GetStatsResponse:
     stats = await service.get_session_stats()
-    ...
+    return stats
 
 
 @router.post(
     "/create",
     summary="Создать сессию",
-    deprecated=True,
+    # deprecated=True,
 )
 async def create_session(
     service: Annotated[MatchService, Depends(get_match_service)],
+    request: Request,
     data: CreateSession,
 ):
-    await service.create_session()
-    ...
+    id = request.state.user.user_id
+    await service.create_session(creator_id=id, invited_id=data.player_id, best_of=data.best_of)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post(
     "/start",
     summary="Запустить игру (анализ)",
-    deprecated=True,
+    # deprecated=True,
 )
 async def start_session(
     service: Annotated[MatchService, Depends(get_match_service)],
-): ...
+):
+    await service.start_session()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post(

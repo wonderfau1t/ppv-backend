@@ -2,9 +2,9 @@ from collections import defaultdict
 from typing import List, Literal
 
 from core.exceptions.crud import NotFoundError
+from core.models import Match, MatchSet
 from core.repositories import MatchRepository
 from core.schemas.match import (
-    AvatarSchema,
     LoadPeriodResponse,
     MatchDetailsPlayerScheme,
     MatchDetailsResponse,
@@ -15,7 +15,8 @@ from core.schemas.match import (
     TopPlayerItemSchema,
     TopPlayersResponse,
 )
-from core.schemas.session import GetSessionResponse, GetStatsResponse
+from core.schemas.session import GetSessionResponse, GetStatsResponse, SetSchema
+from core.schemas.shared import AvatarSchema, PlayerSchema
 from core.schemas.user import (
     MyProfileMatchesListItemSchema,
     MyProfileMatchesListResponse,
@@ -258,10 +259,59 @@ class MatchService:
 
     async def get_session(self) -> GetSessionResponse:
         response = GetSessionResponse(
-            is_live=True, webRTC_url="http://147.45.159.99:8888/live/tennis/"
+            is_live=True,
+            webRTC_url="http://147.45.159.99:8888/live/tennis/",
         )
         return response
 
-    async def get_session_stats(self) -> GetStatsResponse: ...
+    async def get_session_stats(self) -> GetStatsResponse:
+        match = await self.repo.get_active_match()
+        if not match:
+            raise
 
-    async def create_session(self): ...
+        last_set = await self.repo.get_last_set_of_match(match.id)
+        if not last_set:
+            raise
+
+        return GetStatsResponse(
+            player1=PlayerSchema(
+                id=match.player1_id,
+                full_name=match.player1.full_name,
+                avatar=AvatarSchema(
+                    alter=match.player1.initials,
+                    path=match.player1.avatar_url,
+                ),
+            ),
+            player2=PlayerSchema(
+                id=match.player2_id,
+                full_name=match.player2.full_name,
+                avatar=AvatarSchema(
+                    alter=match.player2.initials,
+                    path=match.player2.avatar_url,
+                ),
+            ),
+            score=f"{match.player1_score} – {match.player2_score}",
+            set=SetSchema(
+                label=f"Партия {last_set.set_number}",
+                score=f"{last_set.player1_score} – {last_set.player2_score}",
+            ),
+        )
+
+    async def create_session(self, creator_id: int, invited_id: int, best_of: int):
+        match = Match(
+            duration_in_minutes=0,
+            player1_id=creator_id,
+            player2_id=invited_id,
+            player1_score=0,
+            player2_score=0,
+            sets=[MatchSet(
+                set_number=i,
+                player2_score=0,
+                player1_score=0,
+            ) for i in range(1, best_of + 1)]
+        )
+        id = await self.repo.create_session(match)
+        return id
+
+    async def start_session(self):
+        await self.repo.start_session()

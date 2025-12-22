@@ -1,6 +1,8 @@
 import datetime as dt
+from enum import Enum
 from typing import TYPE_CHECKING, List, Optional
 
+from sqlalchemy import Enum as SQLEnum
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -8,6 +10,22 @@ from core.models.base import Base
 
 if TYPE_CHECKING:
     from .user import UserData
+
+
+class MatchStatus(str, Enum):
+    IN_PROGRESS = "in progress"
+    FINISHED = "finished"
+    CANCELED = "cancled"
+    REGISTERED = "registered"
+
+    @property
+    def label(self):
+        return {
+            MatchStatus.IN_PROGRESS: "В процессе",
+            MatchStatus.FINISHED: "Закончен",
+            MatchStatus.CANCELED: "Отменен",
+            MatchStatus.REGISTERED: "Зарегистрирован",
+        }[self]
 
 
 class Match(Base):
@@ -21,10 +39,11 @@ class Match(Base):
     player2_id: Mapped[int] = mapped_column(ForeignKey("users_data.id"))
     player1_score: Mapped[Optional[int]]
     player2_score: Mapped[Optional[int]]
-    # Победитель матча
-    winner_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users_data.id"), nullable=True
+    status: Mapped[MatchStatus] = mapped_column(
+        SQLEnum(MatchStatus, name="match_status"), default=MatchStatus.REGISTERED
     )
+    # Победитель матча
+    winner_id: Mapped[int | None] = mapped_column(ForeignKey("users_data.id"), nullable=True)
 
     player1: Mapped["UserData"] = relationship(
         foreign_keys=[player1_id], back_populates="matches_as_player1"
@@ -51,11 +70,7 @@ class MatchSet(Base):
     player1_score: Mapped[int]
     player2_score: Mapped[int]
     # Победитель сета
-    winner_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users_data.id"), nullable=True
-    )
+    winner_id: Mapped[int | None] = mapped_column(ForeignKey("users_data.id"), nullable=True)
 
-    match: Mapped["Match"] = relationship(
-        foreign_keys=[match_id], back_populates="sets"
-    )
+    match: Mapped["Match"] = relationship(foreign_keys=[match_id], back_populates="sets")
     winner: Mapped["UserData"] = relationship(foreign_keys=[winner_id])

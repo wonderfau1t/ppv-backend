@@ -1,13 +1,9 @@
 from datetime import date, datetime
 from typing import List
+from .shared import AvatarSchema
 
 
 from .base import BaseSchema
-
-
-class AvatarSchema(BaseSchema):
-    alter: str
-    path: str | None
 
 
 class MatchListItemPlayerSchema(BaseSchema):
