@@ -260,7 +260,7 @@ class MatchService:
         match = await self.repo.get_active_match()
         response = GetSessionResponse(
             is_live=bool(match),
-            webRTC_url="http://147.45.159.99:8888/live/tennis/" if match else None,
+            webRTC_url="http://147.45.159.99:8888/live/processed_tennis/" if match else None,
         )
         return response
 
