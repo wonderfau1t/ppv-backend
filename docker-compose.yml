@@ -1,0 +1,31 @@
+services:
+  api:
+    build: fastapi-app/
+    container_name: ppv-api-con
+    env_file: .env
+    volumes:
+      - ./media:/app/media
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+
+  cv:
+    build: cv/
+    container_name: ppv-cv-con
+
+  db:
+    image: postgres:16.0
+    container_name: ppv-db-con
+    env_file: .env
+    environment:
+      - POSTGRES_USER=${DB__USER}
+      - POSTGRES_PASSWORD=${DB__PASSWORD}
+      - POSTGRES_DB=${DB__NAME}
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
