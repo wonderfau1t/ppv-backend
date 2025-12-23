@@ -30,6 +30,7 @@ def register_middlewares(app: FastAPI):
         public_paths = {
             "/api/v1/auth/register",
             "/api/v1/auth/login",
+            "/api/v1/session/update"
             "/docs",
             "/openapi.json",
         }
